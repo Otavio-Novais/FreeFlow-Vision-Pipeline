@@ -5,7 +5,7 @@ MODEL_ROOT = './best.pt'
 TARGET_DIR = "./models"
 NEW_MODEL_PATH = os.path.join(TARGET_DIR,"best.pt")
 
-if not os.path.exists(MODEL_ROOT):
+if not os.path.exists(MODEL_ROOT) and not os.path.exists(NEW_MODEL_PATH):
     url = "https://drive.google.com/file/d/1ymanfyzTPQQTsORu973PxoNRNGDkIiJN/view?usp=sharing"
     gdown.download(url) # type: ignore
 

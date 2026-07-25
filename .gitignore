@@ -1,12 +1,25 @@
-# Dados e Modelos Pesados
-datasets/
-models/*.pt
-models/*/weights/
-results/
+# Python
 __pycache__/
-.ipynb_checkpoints/
-.vscode/
+*.py[cod]
+*$py.class
+*.so
+.Python
 env/
 venv/
-*.pyc
-.env
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Dados e Modelos Pesados (Nunca subir para o GitHub)
+datasets/
+data/
+models/*.pt
+models/*.onnx
+outputs/
+results/
+test_image/
+
+# IDE
+.vscode/
+.idea/
