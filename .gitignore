@@ -1,0 +1,12 @@
+# Dados e Modelos Pesados
+datasets/
+models/*.pt
+models/*/weights/
+results/
+__pycache__/
+.ipynb_checkpoints/
+.vscode/
+env/
+venv/
+*.pyc
+.env
