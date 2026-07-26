@@ -13,3 +13,6 @@ MODEL_WEIGHTS_PATH = MODELS_DIR / 'best.pt' # O peso que você vai baixar/coloca
 
 # Caminhos de Output
 OUTPUTS_DIR = BASE_DIR / 'outputs'
+
+# Caminho das imagens testes
+IMG_TEST_DIR = BASE_DIR / 'test_image'
