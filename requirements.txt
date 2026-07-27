@@ -21,9 +21,8 @@ seaborn>=0.12
 scipy>=1.10
 
 # ---------- OCR de Placas (futuro / planejado) ----------
-# paddleocr>=2.0
-# paddlepaddle>=2.5
-easyocr>=1.7
+paddleocr>=2.0
+paddlepaddle>=2.5
 
 # ---------- API REST (futuro / planejado) ----------
 # fastapi>=0.100
