@@ -89,21 +89,28 @@ class PlateOCR:
         
         results = self.ocr.predict(processed_img)
 
-        for res in results:
-            res.save_to_img('outputs/paddle_images')
-            res.save_to_json('outputs/paddle_json_images')
-
         # O PaddleOCR retorna uma lista de detecções. Vamos extrair apenas os textos.
-        texts = [res['rec_texts'][0] for res in results]
+        texts = [res['rec_texts'][0] for res in results if res['rec_texts']]
+
+        if not texts:
+            return {
+                'raw_text': '',
+                'corrected_text': '',
+                'validated_plate': None,
+                'ocr_details': []
+            }
+
         raw_text = texts[0]
         
         # Limpeza final via Regex (garante que só sobrou alfanumérico)
         raw_text = re.sub(r'[^A-Z0-9]', '', raw_text)
+
+        corrected_text = self.correct_plate_by_pattern(raw_text)
         
         return {
             'raw_text': raw_text,
-            'corrected_text': self.correct_plate_by_pattern(raw_text),
-            'validated_plate': self.validate_plate(raw_text),
+            'corrected_text': corrected_text,
+            'validated_plate': self.validate_plate(corrected_text),
             'ocr_details': texts # Útil para debugar o que ele leu separadamente
         }
 
