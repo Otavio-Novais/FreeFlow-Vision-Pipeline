@@ -9,8 +9,8 @@
 **Pipeline end-to-end de Visao Computacional para sistemas de pedagio Free Flow** — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.
 
 ---
-
 ## Resumo do Projeto
+
 
 Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera de portico captura o veiculo em movimento, o modelo **YOLOv8** classifica o tipo (carro/moto/caminhao), o **PaddleOCR** le a placa com correcao heuristica, e um banco **SQLite** relacional cruza os dados com tags OBO para detectar divergencias e fraudes — tudo orquestrado por uma classe `FreeFlowPipeline` que processa uma imagem e retorna uma transacao pronta em uma unica chamada.
 
@@ -23,7 +23,25 @@ Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera 
 ```
 
 ---
+## O Problema de Negócio
 
+No Free Flow (pedágio sem cancelas), veículos passam a 100+ km/h sem parar. 
+A concessionária enfrenta 3 desafios críticos:
+
+1. **Evasão de receita**: Caminhões usando tags de carros pagam R$5,50 em vez de R$16,50
+2. **Veículos não taggeados**: 60% dos veículos não possuem OBO — precisam ser cobrados via notificação
+3. **Fraudes sofisticadas**: Tags emprestadas, clonadas ou inativas
+
+Este projeto **simula a lógica de resolução** desses desafios através de um pipeline end-to-end 
+que cruza **visão computacional** (YOLO + OCR) com **regras de negócio** (cruzamento OBO), 
+demonstrando como transações seriam classificadas como `PENDING`, `DIVERGENCE` ou `UNREGISTERED` 
+em um cenário real de produção.
+
+> 💡 **Nota**: Esta é uma POC (Proof of Concept) focada em validar a arquitetura e as regras de negócio. 
+> Em produção, seriam necessários ajustes como fine-tuning do OCR com dataset maior, 
+> integração com APIs reais de OBO, e migração para banco de dados concorrente (PostgreSQL).
+
+---
 ## Estrutura do Repositorio
 
 ```
@@ -61,7 +79,7 @@ FreeFlow-Vision-Pipeline/
 │   ├── ocr_pipeline.py                  # PlateOCR (PaddleOCR + correcao)
 │   ├── pipeline.py                      # FreeFlowPipeline (orquestrador)
 │   ├── database/
-│   │   ├── __init__.py
+│   │   ├── __init__.py                  # Expõe DatabaseConnection e TransactionRepository
 │   │   ├── connection.py                # Gerenciamento de conexao SQLite
 │   │   ├── repository.py                # TransactionRepository (regras de negocio)
 │   │   ├── schemas.sql                  # DDL: 6 tabelas + indices
@@ -226,7 +244,15 @@ python -m pytest tests/ -v
 | Carro | 0.941 |
 | Moto | 0.955 |
 
-> O modelo baseline superou a versao otimizada. A causa raiz e o dataset com rotulos ruidosos (326 imagens de "background" que contem veiculos nao anotados). [Ver ADR-001](docs/decisions/001-spatial-bias-handling.md).
+💡 **Insight contraintuitivo**: O modelo "otimizado" com augmentações geométricas 
+> agressivas (translate=0.3, perspective=0.001) **piorou** o mAP. 
+> 
+> **Causa raiz**: O dataset tem 326 imagens de "background" com veículos não anotados. 
+> Augmentações ensinaram o modelo a detectar carros em posições fisicamente impossíveis 
+> (cantos da imagem), gerando falsos positivos.
+> 
+> **Decisão**: Mantivemos o spatial bias natural — câmeras de pórtico são fixas, 
+> veículos sempre passam pelo centro. [Ver ADR-001](docs/decisions/001-spatial-bias-handling.md).
 
 ### PaddleOCR — Leitura de Placas
 
@@ -290,6 +316,16 @@ O OCR bruto alcancou ~70% de acuracia em imagens reais. Com a camada de correcao
 
 ---
 
+## Desafios Técnicos Superados
+
+| Desafio | Solução | Impacto |
+|---------|---------|---------|
+| **OCR lendo `NOU4E04` em vez de `IYJ7F53`** | Descobri que o crop do YOLO retornava um "Numpy View" (memória não-contígua). Adicionar `.copy()` resolveu. | Acurácia OCR: 70% → 100% |
+| **Augmentations pioraram o mAP do YOLO** | EDA revelou spatial bias natural do dataset (câmeras fixas de pórtico). Removi augmentations geométricas agressivas. | mAP@0.5: 0.795 → 0.948 |
+| **PaddleOCR crashava no Python 3.13** | Erro de MKL ("dynamic library not loaded"). Solução: `export LD_LIBRARY_PATH` + variáveis de ambiente. | Pipeline funcional em Python 3.13 |
+| **Placa `A0X5G10` sendo "corrigida" para padrão errado** | Implementei lógica de "Minimum Edit Distance" — escolhe o padrão que exige MENOS alterações. | Correção precisa entre Antigo/Mercosul |
+
+---
 ## Decisoes de Arquitetura
 
 O projeto segue **4 ADRs** documentando cada decisao tecnica relevante:
@@ -321,18 +357,22 @@ accounts ──┐                  toll_categories
 
 ## Roadmap
 
-- [x] Deteccao YOLOv8 + classificacao carro/moto
-- [x] OCR de placas com PaddleOCR + correcao heuristica
-- [x] Banco SQLite relacional com 6 tabelas
-- [x] Regras de negocio (divergencia, auditoria, faturamento)
-- [x] Testes unitarios (104 cenarios em 7 arquivos)
+### Concluído ✅
+- [x] Detecção YOLOv8 + classificação carro/moto (mAP@0.5: 0.948)
+- [x] OCR com PaddleOCR + correção heurística (100% acurácia no teste)
+- [x] Banco SQLite com 6 tabelas normalizadas (3FN)
+- [x] Regras de negócio: divergência, auditoria, faturamento
+- [x] 104 testes unitários cobrindo todas as camadas
 - [x] Pipeline orquestrado (`FreeFlowPipeline`)
-- [x] Documentacao de arquitetura (4 ADRs)
-- [ ] API REST com FastAPI
-- [ ] Containerizacao com Docker
-- [ ] Migracao para PostgreSQL
-- [ ] Dashboard de auditoria (Streamlit)
-- [ ] Deploy cloud (AWS/GCP)
+- [x] 4 ADRs documentando decisões arquiteturais
+
+### Próximos Passas 🎯
+- [ ] **API REST (FastAPI)**: Endpoint `/predict` recebendo imagem e retornando transação JSON
+- [ ] **Dashboard Streamlit**: Visualização de divergências, faturamento diário, heatmap de pórticos
+- [ ] **Containerização (Docker)**: Docker Compose com app + PostgreSQL + Redis
+- [ ] **Migração PostgreSQL**: Testar schema atual em banco de produção com concorrência
+- [ ] **Sistema de filas (Kafka/RabbitMQ)**: Arquitetura de microsserviços para escalabilidade horizontal
+- [ ] **Deploy cloud (AWS)**: Lambda + S3 + RDS para processamento sob demanda
 
 ---
 
