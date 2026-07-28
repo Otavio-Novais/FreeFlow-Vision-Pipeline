@@ -86,7 +86,7 @@ class VehicleDetector:
         y2 = max(0, min(y2,h))
 
         cropped = img[y1:y2, x1:x2] # Com base no box predito pelo nosso modelo acima, estamos recortando a imagem 
-        return cropped
+        return cropped.copy()
 
 
 

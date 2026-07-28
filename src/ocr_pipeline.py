@@ -63,15 +63,7 @@ class PlateOCR:
         
         resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
 
-        # Cria uma matriz de nitidez
-        kernel_sharpening = np.array([[-1, -1, -1],
-                                    [-1,  9, -1],
-                                    [-1, -1, -1]])
-
-        # Aplicamos o kernel de nitidez na nossa imagem
-        img_sharpened = cv2.filter2D(resized, -1, kernel_sharpening)
-
-        blur = cv2.GaussianBlur(img_sharpened, (3, 3), 0)
+        blur = cv2.GaussianBlur(resized, (3, 3), 0)
         
         # Salvamos para fins de DEBUG
         cv2.imwrite(f"outputs/ocr_images/final_image.jpg", blur)
@@ -84,10 +76,10 @@ class PlateOCR:
         Lê a placa usando a nova API .predict() do PaddleOCR com parsing robusto.
         """
         processed_img = self.preprocess_image(image)
-
-        texts = []
         
         results = self.ocr.predict(processed_img)
+
+        texts = []
 
         # O PaddleOCR retorna uma lista de detecções. Vamos extrair apenas os textos.
         texts = [res['rec_texts'][0] for res in results if res['rec_texts']]
