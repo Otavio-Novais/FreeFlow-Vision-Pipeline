@@ -6,7 +6,7 @@
 [![Tests](https://img.shields.io/badge/tests-104/104%20passing-brightgreen.svg)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Pipeline end-to-end de **ANPR (Automatic Number Plate Recognition)** para sistemas de pedágio Free Flow...** — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.
+**Pipeline end-to-end de **ANPR (Automatic Number Plate Recognition)** para sistemas de pedágio Free Flow — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.**
 
 ---
 ## Resumo do Projeto
