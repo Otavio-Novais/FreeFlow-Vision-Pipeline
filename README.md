@@ -322,15 +322,6 @@ O OCR bruto alcancou ~70% de acuracia em imagens reais. Com a camada de correcao
 
 ---
 
-## Desafios Técnicos Superados
-
-| Desafio | Solução | Impacto |
-|---------|---------|---------|
-| **OCR lendo `NOU4E04` em vez de `IYJ7F53`** | Descobri que o crop do YOLO retornava um "Numpy View" (memória não-contígua). Adicionar `.copy()` resolveu. | Acurácia OCR: 70% → 100% |
-| **Augmentations pioraram o mAP do YOLO** | EDA revelou spatial bias natural do dataset (câmeras fixas de pórtico). Removi augmentations geométricas agressivas. | mAP@0.5: 0.795 → 0.948 |
-| **PaddleOCR crashava no Python 3.13** | Erro de MKL ("dynamic library not loaded"). Solução: `export LD_LIBRARY_PATH` + variáveis de ambiente. | Pipeline funcional em Python 3.13 |
-| **Placa `A0X5G10` sendo "corrigida" para padrão errado** | Implementei lógica de "Minimum Edit Distance" — escolhe o padrão que exige MENOS alterações. | Correção precisa entre Antigo/Mercosul |
-
 ---
 ## Decisoes de Arquitetura
 
