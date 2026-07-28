@@ -1,7 +1,7 @@
 # FreeFlow ANPR Pipeline
 
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
-[![YOLOv8](https://img.shields.io/badge/YOLOv8-8.0+-purple.svg)](https://github.com/ultralytics/ultralytics)
+[![YOLO26](https://img.shields.io/badge/YOLO26-Ultralytics-purple.svg)](https://github.com/ultralytics/ultralytics)
 [![PaddleOCR](https://img.shields.io/badge/PaddleOCR-PP--OCRv4-orange.svg)](https://github.com/PaddlePaddle/PaddleOCR)
 [![Tests](https://img.shields.io/badge/tests-104/104%20passing-brightgreen.svg)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -12,10 +12,10 @@
 ## Resumo do Projeto
 
 
-Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera de portico captura o veiculo em movimento, o modelo **YOLOv8** classifica o tipo (carro/moto/caminhao), o **PaddleOCR** le a placa com correcao heuristica, e um banco **SQLite** relacional cruza os dados com tags OBO para detectar divergencias e fraudes — tudo orquestrado por uma classe `FreeFlowPipeline` que processa uma imagem e retorna uma transacao pronta em uma unica chamada.
+Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera de portico captura o veiculo em movimento, o modelo **YOLO26** classifica o tipo (carro/moto/caminhao), o **PaddleOCR** le a placa com correcao heuristica, e um banco **SQLite** relacional cruza os dados com tags OBO para detectar divergencias e fraudes — tudo orquestrado por uma classe `FreeFlowPipeline` que processa uma imagem e retorna uma transacao pronta em uma unica chamada.
 
 ```
-    [Camera] ---> [YOLOv8] ---> [Crop] ---> [PaddleOCR] ---> [SQLite + Business Rules]
+    [Camera] ---> [YOLOv26] ---> [Crop] ---> [PaddleOCR] ---> [SQLite + Business Rules]
                       |                        |                      |
                 class carro/moto        "IYJ7F53"              DIVERGENCE?
                                                            UNREGISTERED?
@@ -57,7 +57,7 @@ FreeFlow-Vision-Pipeline/
 ├── data/
 │   └── freeflow.db                      # SQLite gerado automaticamente
 ├── datasets/
-│   └── placas_brasileiras_10/           # Dataset YOLOv8 (Roboflow, v10)
+│   └── placas_brasileiras_10/           # Dataset YOLO26 (Roboflow, v10)
 │       ├── data.yaml                    #  2 classes: carro, moto
 │       ├── train/                       #  1.726 imagens
 │       ├── valid/                       #    493 imagens
@@ -69,7 +69,7 @@ FreeFlow-Vision-Pipeline/
 │       ├── 003-relational-database-and-modular-architecture.md
 │       └── 004-pipeline-architecture-and-business-rules.md
 ├── models/
-│   └── best.pt                          # Pesos YOLOv8 treinados (22.5 MB)
+│   └── best.pt                          # Pesos YOLO26 treinados (22.5 MB)
 ├── notebook/
 │   └── FreeFlow_Vision_Pipeline.ipynb   # Notebook completo (8 etapas)
 ├── outputs/
@@ -113,7 +113,7 @@ FreeFlow-Vision-Pipeline/
 
 | Camada | Tecnologia | Proposito |
 |---|---|---|
-| **ML / Deteccao** | Ultralytics YOLOv8, PyTorch | Deteccao e classificacao de veiculos |
+| **ML / Deteccao** | Ultralytics YOLOv26, PyTorch | Deteccao e classificacao de veiculos |
 | **OCR** | PaddleOCR (PP-OCRv4) | Leitura de placas veiculares |
 | **Visao Computacional** | OpenCV, NumPy | Pre-processamento e recorte de imagens |
 | **Banco de Dados** | SQLite + SQL puro | Persistencia relacional de transacoes |
@@ -236,29 +236,23 @@ python -m pytest tests/ -v
 
 ## Resultados
 
-### YOLOv8 — Deteccao de Veiculos
+### YOLOv26 — Deteccao de Veiculos
 
-| Metrica | Baseline | Optimized |
+| Métrica | Baseline | Optimized | Variação |
+|---|---|---|---|
+| **mAP@0.5** | **0.943** | 0.940 | +0.3% ✅ |
+| **mAP@0.5:0.95** | **0.817** | 0.795 | +2.2% ✅ |
+| **Precision** | **0.906** | 0.873 | +3.3% ✅ |
+| **Recall** | **0.920** | 0.906 | +1.4% ✅ |
+
+| Classe | mAP@0.5 (Baseline) | mAP@0.5 (Optimized) |
 |---|---|---|
-| **mAP@0.5** | 0.948 | 0.925 |
-| **mAP@0.5:0.95** | 0.823 | 0.795 |
-| **Precision** | 0.875 | 0.902 |
-| **Recall** | 0.941 | 0.896 |
+| Carro | 0.941 | 0.938 |
+| Moto | 0.955 | 0.942 |
 
-| Classe | mAP@0.5 (Baseline) |
-|---|---|
-| Carro | 0.941 |
-| Moto | 0.955 |
-
-> 💡 **Insight contraintuitivo**: O modelo "otimizado" com augmentações geométricas 
-> agressivas (translate=0.3, perspective=0.001) **piorou** o mAP. 
-> 
-> **Causa raiz**: O dataset tem 326 imagens de "background" com veículos não anotados. 
-> Augmentações ensinaram o modelo a detectar carros em posições fisicamente impossíveis 
-> (cantos da imagem), gerando falsos positivos.
-> 
-> **Decisão**: Mantivemos o spatial bias natural — câmeras de pórtico são fixas, 
-> veículos sempre passam pelo centro. [Ver ADR-001](docs/decisions/001-spatial-bias-handling.md).
+> 💡 **Por que YOLO26?** 
+> A migração do YOLO26 para o YOLO26 traz melhorias arquiteturais significativas, como a inferência *NMS-free* (Non-Maximum Suppression embutida na rede), 
+> que elimina gargalos de pós-processamento em Python e reduz a latência em dispositivos de borda (CPU), algo crítico para a leitura em tempo real em pórticos de pedágio.
 
 ### PaddleOCR — Leitura de Placas
 
@@ -354,7 +348,7 @@ accounts ──┐                  toll_categories
 ## Roadmap
 
 ### Concluído ✅
-- [x] Detecção YOLOv8 + classificação carro/moto (mAP@0.5: 0.948)
+- [x] Detecção YOLO26 + classificação carro/moto (mAP@0.5: 0.948)
 - [x] OCR com PaddleOCR + correção heurística (100% acurácia no teste)
 - [x] Banco SQLite com 6 tabelas normalizadas (3FN)
 - [x] Regras de negócio: divergência, auditoria, faturamento
