@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-8.0+-purple.svg)](https://github.com/ultralytics/ultralytics)
 [![PaddleOCR](https://img.shields.io/badge/PaddleOCR-PP--OCRv4-orange.svg)](https://github.com/PaddlePaddle/PaddleOCR)
-[![Tests](https://img.shields.io/badge/tests-12/12%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-104/104%20passing-brightgreen.svg)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **Pipeline end-to-end de Visao Computacional para sistemas de pedagio Free Flow** — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.
@@ -71,8 +71,15 @@ FreeFlow-Vision-Pipeline/
 │       └── download_model.py            # Download Google Drive
 ├── test_images/                         # 8 imagens para inferencia
 ├── tests/
-│   ├── test_repository.py               # 12 testes unitarios (regras de negocio)
-│   └── test_paddleocr_check.py          # Verificacao de ambiente PaddleOCR
+│   ├── __init__.py
+│   ├── conftest.py                       # Fixtures compartilhadas
+│   ├── test_config.py                    # 9 testes de constantes de path
+│   ├── test_database.py                  # 17 testes de conexao e schema
+│   ├── test_inference.py                 # 13 testes do VehicleDetector
+│   ├── test_ocr_pipeline.py              # 36 testes do PlateOCR
+│   ├── test_paddleocr_check.py           # Verificacao de ambiente PaddleOCR
+│   ├── test_pipeline.py                  # 7 testes do FreeFlowPipeline
+│   └── test_repository.py               # 12 testes de regras de negocio
 └── requirements.txt                     # 15 dependencias limpas
 ```
 
@@ -88,7 +95,7 @@ FreeFlow-Vision-Pipeline/
 | **Banco de Dados** | SQLite + SQL puro | Persistencia relacional de transacoes |
 | **Dataset** | Roboflow Universe (Alfascan, v10) | 2.465 imagens rotuladas |
 | **Analise** | Pandas, Matplotlib, Seaborn, SciPy | EDA e visualizacao de metricas |
-| **Testes** | pytest, unittest | 12 cenarios de negocio validados |
+| **Testes** | pytest, unittest | 104 cenarios cobrindo ML, OCR, DB e pipeline |
 | **Documentacao** | ADRs (Architecture Decision Records) | 4 decisoes de arquitetura registradas |
 
 ---
@@ -198,7 +205,7 @@ repo.close()
 
 ```bash
 python -m pytest tests/ -v
-# 12 passed
+# 104 passed
 ```
 
 ---
@@ -235,8 +242,9 @@ O OCR bruto alcancou ~70% de acuracia em imagens reais. Com a camada de correcao
 
 ### Regras de Negocio — Cobertura de Cenarios
 
-**12/12 testes passando** — cada cenario documentado com seed data realista:
+**104/104 testes passando** em 8 arquivos, cobrindo todas as camadas do sistema:
 
+#### Banco de Dados & Negocio (29 testes)
 | # | Cenario | Status Gerado | Tarifa |
 |---|---|---|---|
 | 1 | Passagem normal (placa + tag batem) | `PENDING` | R$ 5.50 |
@@ -251,6 +259,32 @@ O OCR bruto alcancou ~70% de acuracia em imagens reais. Com a camada de correcao
 | 10 | Multiplas passagens mesmo veiculo | `PENDING` (3x) | R$ 16.50 |
 | 11 | Placa vazia (edge case) | `UNREGISTERED` | — |
 | 12 | Confianca zero (edge case) | `UNREGISTERED` | — |
+| + | Schema: 6 tabelas + 5 indices criados | — | — |
+| + | Seed data idempotente | — | — |
+| + | Context manager: commit, rollback, cursor close | — | — |
+
+#### OCR — Leitura de Placas (36 testes)
+| Metodo | Cenarios |
+|---|---|
+| `validate_plate` | 12 (Mercosul, antigo, vazio, lowercase, edge cases) |
+| `_apply_corrections` | 10 (correcoes validas, sem confusao, multiplas violacoes) |
+| `correct_plate_by_pattern` | 7 (perfeito, 1 correcao, incrretivel, empate de custo) |
+| `read_plate` | 5 (vazio, texto unico, multiplo, regex, invalido) |
+| `preprocess_image` | 6 (upscale, sem resize, canais, aspecto, nitidez, grayscale) |
+
+#### Deteccao YOLO (13 testes)
+| Metodo | Cenarios |
+|---|---|
+| `__init__` | 3 (default weights, custom conf, default conf) |
+| `detect` | 5 (sem deteccao, unica, multipla, save, params) |
+| `crop_vehicle` | 8 (normal, clamping 4 bordas, fora, float, zero-area) |
+
+#### Pipeline & Config (16 testes)
+| Metodo | Cenarios |
+|---|---|
+| `FreeFlowPipeline.__init__` | 4 (componentes, threshold, class mapping) |
+| `get_audit_report` / `close` | 3 (com/sem divergencias, delegacao) |
+| `config.py` paths | 9 (absoluto, Path, existencia, consistencia) | |
 
 [Ver ADR-003](docs/decisions/003-relational-database-and-modular-architecture.md) e [ADR-004](docs/decisions/004-pipeline-architecture-and-business-rules.md).
 
@@ -291,7 +325,7 @@ accounts ──┐                  toll_categories
 - [x] OCR de placas com PaddleOCR + correcao heuristica
 - [x] Banco SQLite relacional com 6 tabelas
 - [x] Regras de negocio (divergencia, auditoria, faturamento)
-- [x] Testes unitarios (12 cenarios)
+- [x] Testes unitarios (104 cenarios em 7 arquivos)
 - [x] Pipeline orquestrado (`FreeFlowPipeline`)
 - [x] Documentacao de arquitetura (4 ADRs)
 - [ ] API REST com FastAPI
