@@ -23,23 +23,29 @@ Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera 
 ```
 
 ---
-## O Problema de Negócio
+## Contexto do Problema
 
-No Free Flow (pedágio sem cancelas), veículos passam a 100+ km/h sem parar. 
-A concessionária enfrenta 3 desafios críticos:
+O Free Flow é um modelo de pedágio sem cancelas onde veículos passam em fluxo livre, 
+sem necessidade de parada. A tecnologia OBO (On-Board Equipment) permite identificação 
+eletrônica automática via tags RFID/DSRC no para-brisa.
 
-1. **Evasão de receita**: Caminhões usando tags de carros pagam R$5,50 em vez de R$16,50
-2. **Veículos não taggeados**: 60% dos veículos não possuem OBO — precisam ser cobrados via notificação
-3. **Fraudes sofisticadas**: Tags emprestadas, clonadas ou inativas
+No entanto, nem todos os veículos possuem tag OBO ativa. Nesses casos, o sistema depende 
+de **leitura visual por câmeras** para identificar a placa e processar a cobrança 
+posteriormente (via notificação ou boleto).
 
-Este projeto **simula a lógica de resolução** desses desafios através de um pipeline end-to-end 
-que cruza **visão computacional** (YOLO + OCR) com **regras de negócio** (cruzamento OBO), 
-demonstrando como transações seriam classificadas como `PENDING`, `DIVERGENCE` ou `UNREGISTERED` 
-em um cenário real de produção.
+Este projeto explora como um pipeline de **Visão Computacional** (YOLO + OCR) pode 
+auxiliar nesse processo, implementando uma arquitetura que:
 
-> 💡 **Nota**: Esta é uma POC (Proof of Concept) focada em validar a arquitetura e as regras de negócio. 
-> Em produção, seriam necessários ajustes como fine-tuning do OCR com dataset maior, 
-> integração com APIs reais de OBO, e migração para banco de dados concorrente (PostgreSQL).
+1. **Detecta e classifica veículos** (carro/moto) em imagens de pórtico
+2. **Lê placas veiculares** com correção heurística para padrões brasileiros (Antigo e Mercosul)
+3. **Simula regras de negócio** para cruzamento com tags OBO, classificando transações como:
+   - `PENDING`: leitura visual e tag OBO consistentes
+   - `DIVERGENCE`: inconsistência entre placa lida e tag registrada
+   - `UNREGISTERED`: veículo sem tag OBO (fluxo de cobrança por notificação)
+
+> 📝 **Nota**: Esta é uma POC educacional. Os valores de tarifa, percentuais de evasão 
+> e cenários de fraude são **ilustrativos**, baseados em conhecimento geral do setor 
+> de concessões rodoviárias. O dataset utilizado contém apenas 2 classes: **carro** e **moto**.
 
 ---
 ## Estrutura do Repositorio
