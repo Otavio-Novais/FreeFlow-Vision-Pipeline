@@ -1,9 +1,120 @@
 import unittest
+from unittest.mock import patch, MagicMock
 
 import cv2
 import numpy as np
 
+from config import MODEL_WEIGHTS_PATH
 from inference import VehicleDetector
+
+
+class TestVehicleDetectorInit(unittest.TestCase):
+    def test_default_weights_path(self):
+        with patch("inference.YOLO") as mock_yolo:
+            detector = VehicleDetector()
+            mock_yolo.assert_called_once()
+            arg = mock_yolo.call_args.args[0]
+            self.assertEqual(str(arg), str(MODEL_WEIGHTS_PATH))
+
+    def test_custom_conf_threshold(self):
+        with patch("inference.YOLO"):
+            detector = VehicleDetector(conf_threshold=0.75)
+            self.assertEqual(detector.conf_threshold, 0.75)
+
+    def test_default_conf_threshold(self):
+        with patch("inference.YOLO"):
+            detector = VehicleDetector()
+            self.assertEqual(detector.conf_threshold, 0.05)
+
+
+class TestVehicleDetectorDetect(unittest.TestCase):
+    def setUp(self):
+        patcher = patch("inference.YOLO")
+        self.mock_yolo_cls = patcher.start()
+        self.addCleanup(patcher.stop)
+        self.detector = VehicleDetector(conf_threshold=0.2)
+        self.detector.model.names = {0: "carro", 1: "moto"}
+
+    def _make_result(self, cls_data, conf_data, xyxy_data):
+        result = MagicMock()
+        result.boxes = MagicMock()
+        result.boxes.__len__.return_value = len(cls_data)
+        result.boxes.cls.cpu.return_value.numpy.return_value.astype.return_value = np.array(
+            cls_data
+        )
+        result.boxes.conf.cpu.return_value.numpy.return_value = np.array(
+            conf_data, dtype=np.float32
+        )
+        result.boxes.xyxy.cpu.return_value.numpy.return_value = np.array(
+            xyxy_data, dtype=np.float32
+        )
+        return result
+
+    def test_no_detections(self):
+        empty_result = MagicMock()
+        empty_result.boxes = None
+        self.detector.model.predict.return_value = [empty_result]
+
+        detections = self.detector.detect("/tmp/fake.jpg")
+        self.assertEqual(detections, [])
+
+    def test_single_detection(self):
+        result = self._make_result(
+            cls_data=[0],
+            conf_data=[0.95],
+            xyxy_data=[[10.0, 20.0, 100.0, 200.0]],
+        )
+        self.detector.model.predict.return_value = [result]
+
+        detections = self.detector.detect("/tmp/fake.jpg")
+        self.assertEqual(len(detections), 1)
+        self.assertEqual(detections[0]["class_id"], 0)
+        self.assertEqual(detections[0]["class_name"], "carro")
+        self.assertAlmostEqual(detections[0]["confidence"], 0.95)
+        self.assertEqual(detections[0]["bbox"], [10.0, 20.0, 100.0, 200.0])
+
+    def test_multiple_detections(self):
+        result = self._make_result(
+            cls_data=[0, 1, 0],
+            conf_data=[0.90, 0.85, 0.70],
+            xyxy_data=[
+                [10, 20, 100, 200],
+                [30, 40, 120, 180],
+                [50, 60, 140, 160],
+            ],
+        )
+        self.detector.model.predict.return_value = [result]
+
+        detections = self.detector.detect("/tmp/fake.jpg")
+        self.assertEqual(len(detections), 3)
+        self.assertEqual(detections[0]["class_name"], "carro")
+        self.assertEqual(detections[1]["class_name"], "moto")
+        self.assertEqual(detections[2]["class_name"], "carro")
+
+    def test_save_results_true(self):
+        result = self._make_result(
+            cls_data=[0],
+            conf_data=[0.95],
+            xyxy_data=[[10, 20, 100, 200]],
+        )
+        self.detector.model.predict.return_value = [result]
+
+        detections = self.detector.detect("/tmp/fake.jpg", save_results=True)
+        self.detector.model.predict.assert_called_once()
+        call_kwargs = self.detector.model.predict.call_args.kwargs
+        self.assertTrue(call_kwargs["save"])
+
+    def test_predict_called_with_correct_params(self):
+        result = self._make_result(cls_data=[], conf_data=[], xyxy_data=[])
+        self.detector.model.predict.return_value = [result]
+
+        self.detector.detect("/tmp/fake.jpg", save_results=False)
+        call_kwargs = self.detector.model.predict.call_args.kwargs
+        self.assertEqual(call_kwargs["source"], "/tmp/fake.jpg")
+        self.assertEqual(call_kwargs["conf"], 0.2)
+        self.assertEqual(call_kwargs["iou"], 0.30)
+        self.assertEqual(call_kwargs["save"], False)
+        self.assertEqual(call_kwargs["verbose"], False)
 
 
 class TestCropVehicle(unittest.TestCase):

@@ -11,6 +11,80 @@ def _make_ocr_instance():
         return PlateOCR()
 
 
+class TestPlateOCRInit(unittest.TestCase):
+    def test_paddleocr_called_with_default_params(self):
+        with patch("ocr_pipeline.PaddleOCR") as mock_paddle:
+            PlateOCR()
+            mock_paddle.assert_called_once()
+            call_kwargs = mock_paddle.call_args.kwargs
+            self.assertEqual(call_kwargs["lang"], "en")
+            self.assertEqual(call_kwargs["ocr_version"], "PP-OCRv4")
+            self.assertEqual(call_kwargs["use_doc_orientation_classify"], False)
+            self.assertEqual(call_kwargs["use_doc_unwarping"], False)
+            self.assertEqual(call_kwargs["use_textline_orientation"], False)
+
+    def test_confusions_dict_populated(self):
+        with patch("ocr_pipeline.PaddleOCR"):
+            ocr = PlateOCR()
+        self.assertIsInstance(ocr.confusions, dict)
+        self.assertGreater(len(ocr.confusions), 10)
+        self.assertIn("Z", ocr.confusions)
+        self.assertIn("2", ocr.confusions)
+        self.assertIn("O", ocr.confusions)
+        self.assertIn("0", ocr.confusions)
+
+    def test_gpu_flag_passed(self):
+        with patch("ocr_pipeline.PaddleOCR") as mock_paddle:
+            PlateOCR(gpu=True)
+            mock_paddle.assert_called_once()
+        with patch("ocr_pipeline.PaddleOCR") as mock_paddle:
+            PlateOCR(gpu=False)
+            mock_paddle.assert_called_once()
+
+
+class TestPlateOCRReadPlate(unittest.TestCase):
+    def setUp(self):
+        patcher = patch("ocr_pipeline.PaddleOCR")
+        self.mock_paddle = patcher.start()
+        self.addCleanup(patcher.stop)
+        self.ocr = PlateOCR()
+
+    def test_empty_ocr_results(self):
+        self.ocr.ocr.predict.return_value = [{"rec_texts": []}]
+        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+            result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
+        self.assertEqual(result["raw_text"], "")
+        self.assertEqual(result["corrected_text"], "")
+        self.assertIsNone(result["validated_plate"])
+
+    def test_single_valid_text(self):
+        self.ocr.ocr.predict.return_value = [{"rec_texts": ["IYJ7F53"]}]
+        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+            result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
+        self.assertEqual(result["raw_text"], "IYJ7F53")
+        self.assertEqual(result["validated_plate"], "IYJ7F53")
+
+    def test_multiple_texts_uses_first(self):
+        self.ocr.ocr.predict.return_value = [
+            {"rec_texts": ["ABC1234", "EXTRA567"]}
+        ]
+        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+            result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
+        self.assertEqual(result["raw_text"], "ABC1234")
+
+    def test_non_alphanumeric_stripped(self):
+        self.ocr.ocr.predict.return_value = [{"rec_texts": ["ABC-1234"]}]
+        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+            result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
+        self.assertEqual(result["raw_text"], "ABC1234")
+
+    def test_invalid_plate_not_registered(self):
+        self.ocr.ocr.predict.return_value = [{"rec_texts": ["XXXXXXX"]}]
+        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+            result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
+        self.assertIsNone(result["validated_plate"])
+
+
 class TestValidatePlate(unittest.TestCase):
     def setUp(self):
         self.ocr = _make_ocr_instance()
