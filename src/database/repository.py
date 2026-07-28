@@ -37,6 +37,32 @@ class TransactionRepository:
             category_id = category['id'] if category else None
             toll_amount = category['base_price'] if category else 0.0
 
+            cursor.execute("SELECT id, category_id FROM vehicles WHERE plate = ?", (plate_read,))
+            existing_vehicle = cursor.fetchone()
+
+            if existing_vehicle:
+                # Veículo já existe, apenas atualiza a categoria se mudou
+                if category_id and existing_vehicle['category_id'] != category_id:
+                    cursor.execute(
+                        "UPDATE vehicles SET category_id = ? WHERE plate = ?",
+                        (category_id, plate_read)
+                    )
+                    print(f"  🔄 Categoria do veículo {plate_read} atualizada para {vehicle_detected}")
+            else:
+                # Veículo não existe, cria novo registro
+                cursor.execute("""
+                    INSERT INTO vehicles (plate, category_id, brand, model, year)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    plate_read,
+                    category_id,
+                    'Desconhecida',  # Não sabemos a marca ainda
+                    'Desconhecido',  # Não sabemos o modelo ainda
+                    None             # Não sabemos o ano ainda
+                ))
+                print(f"  🆕 Novo veículo cadastrado automaticamente: {plate_read} ({vehicle_detected})")
+
+
             obo_tag_id = None
             tag = None
             divergence_reason = None
