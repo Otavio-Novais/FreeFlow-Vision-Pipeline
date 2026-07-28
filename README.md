@@ -1,12 +1,12 @@
-# FreeFlow Vision Pipeline
+# FreeFlow ANPR Pipeline
 
-[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-8.0+-purple.svg)](https://github.com/ultralytics/ultralytics)
 [![PaddleOCR](https://img.shields.io/badge/PaddleOCR-PP--OCRv4-orange.svg)](https://github.com/PaddlePaddle/PaddleOCR)
 [![Tests](https://img.shields.io/badge/tests-104/104%20passing-brightgreen.svg)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Pipeline end-to-end de Visao Computacional para sistemas de pedagio Free Flow** — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.
+**Pipeline end-to-end de **ANPR (Automatic Number Plate Recognition)** para sistemas de pedágio Free Flow...** — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.
 
 ---
 ## Resumo do Projeto
@@ -384,7 +384,8 @@ accounts ──┐                  toll_categories
 
 <div align="center">
 
-**Desenvolvido por Otavio Novais**  
+**FreeFlow ANPR Pipeline**  
+Desenvolvido por Otavio Novais  
 Data Scientist | Machine Learning Engineer
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/otavio-novais/)
