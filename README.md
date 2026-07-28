@@ -250,7 +250,7 @@ python -m pytest tests/ -v
 | Carro | 0.941 |
 | Moto | 0.955 |
 
-💡 **Insight contraintuitivo**: O modelo "otimizado" com augmentações geométricas 
+> 💡 **Insight contraintuitivo**: O modelo "otimizado" com augmentações geométricas 
 > agressivas (translate=0.3, perspective=0.001) **piorou** o mAP. 
 > 
 > **Causa raiz**: O dataset tem 326 imagens de "background" com veículos não anotados. 
@@ -322,7 +322,6 @@ O OCR bruto alcancou ~70% de acuracia em imagens reais. Com a camada de correcao
 
 ---
 
----
 ## Decisoes de Arquitetura
 
 O projeto segue **4 ADRs** documentando cada decisao tecnica relevante:
