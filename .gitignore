@@ -18,7 +18,7 @@ models/*.pt
 models/*.onnx
 outputs/
 results/
-test_image/
+test_images/
 
 # IDE
 .vscode/

@@ -93,7 +93,7 @@ class VehicleDetector:
 # Script de teste:
 if __name__ == '__main__':
     # 1. Criar detector com threshold mais alto para produção
-    detector = VehicleDetector(conf_threshold=0.05)
+    detector = VehicleDetector(conf_threshold=0.20)
     
     # 2. Pegar a primeira imagem de teste disponível
     test_image = str(list(Path(IMG_TEST_DIR).glob('*.jpg'))[0])
