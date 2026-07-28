@@ -1,4 +1,4 @@
-# ADR-005: Seleção e Configuração do Modelo de Detecção (YOLO26 Baseline)
+# ADR-006: Seleção e Configuração do Modelo de Detecção (YOLO26 Baseline)
 
 **Status:** Aceito  
 **Data:** 2026-07-28  
