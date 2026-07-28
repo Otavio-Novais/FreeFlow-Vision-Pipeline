@@ -1,16 +1,26 @@
 # FreeFlow Vision Pipeline
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-8.0+-purple.svg)](https://github.com/ultralytics/ultralytics)
+[![PaddleOCR](https://img.shields.io/badge/PaddleOCR-PP--OCRv4-orange.svg)](https://github.com/PaddlePaddle/PaddleOCR)
+[![Tests](https://img.shields.io/badge/tests-12/12%20passing-brightgreen.svg)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Pipeline de Visao Computacional para simulacao de sistema **Free Flow** (pedagio eletronico sem parada) — deteccao e classificacao de veiculos com integracao futura a OCR de placas e banco de dados transacional.
+**Pipeline end-to-end de Visao Computacional para sistemas de pedagio Free Flow** — da deteccao do veiculo ate a transacao financeira com regras de negocio automatizadas.
 
 ---
 
-## Objetivo
+## Resumo do Projeto
 
-Detectar veiculos (carro/moto) em imagens de trafego, classifica-los, extrair a placa via OCR e montar transacoes de cobranca automatica com regras de negocio. O projeto simula a captura por cameras em porticos de rodovias.
+Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera de portico captura o veiculo em movimento, o modelo **YOLOv8** classifica o tipo (carro/moto/caminhao), o **PaddleOCR** le a placa com correcao heuristica, e um banco **SQLite** relacional cruza os dados com tags OBO para detectar divergencias e fraudes — tudo orquestrado por uma classe `FreeFlowPipeline` que processa uma imagem e retorna uma transacao pronta em uma unica chamada.
+
+```
+    [Camera] ---> [YOLOv8] ---> [Crop] ---> [PaddleOCR] ---> [SQLite + Business Rules]
+                      |                        |                      |
+                class carro/moto        "IYJ7F53"              DIVERGENCE?
+                                                           UNREGISTERED?
+                                                             PENDING?
+```
 
 ---
 
@@ -19,66 +29,67 @@ Detectar veiculos (carro/moto) em imagens de trafego, classifica-los, extrair a 
 ```
 FreeFlow-Vision-Pipeline/
 ├── config/
-│   └── settings.yaml              # Configuracoes do projeto (pendente)
-├── data/                          # Dados auxiliares
+│   └── settings.yaml                    # Configuracoes do projeto (pendente)
+├── data/
+│   └── freeflow.db                      # SQLite gerado automaticamente
 ├── datasets/
-│   └── placas_brasileiras_10/     # Dataset YOLOv8 (Roboflow)
-│       ├── data.yaml
-│       ├── train/                 # 1.726 imagens + labels
-│       ├── valid/                 # 493 imagens + labels
-│       └── test/                  # 246 imagens + labels
-├── env/
-│   └── .env                       # Chave da API Roboflow
+│   └── placas_brasileiras_10/           # Dataset YOLOv8 (Roboflow, v10)
+│       ├── data.yaml                    #  2 classes: carro, moto
+│       ├── train/                       #  1.726 imagens
+│       ├── valid/                       #    493 imagens
+│       └── test/                        #    246 imagens
+├── docs/
+│   └── decisions/                       # Architecture Decision Records (4 ADRs)
+│       ├── 001-spatial-bias-handling.md
+│       ├── 002-ocr-engine-and-correction-strategy.md
+│       ├── 003-relational-database-and-modular-architecture.md
+│       └── 004-pipeline-architecture-and-business-rules.md
 ├── models/
-│   └── best.pt                    # Pesos YOLOv8 treinados (22.5MB)
+│   └── best.pt                          # Pesos YOLOv8 treinados (22.5 MB)
 ├── notebook/
-│   └── FreeFlow_Vision_Pipeline.ipynb  # Notebook completo do projeto
+│   └── FreeFlow_Vision_Pipeline.ipynb   # Notebook completo (8 etapas)
 ├── outputs/
-│   ├── predictions/               # Inferencias salvas
-│   └── cropped_vehicles/          # Recortes de veiculos detectados
+│   ├── predictions/                     # Imagens anotadas pelo YOLO
+│   ├── cropped_vehicles/                # Recortes de veiculos detectados
+│   ├── ocr_images/                      # Pre-processamento de imagens OCR
+│   ├── paddle_images/                   # Visualizacao dos resultados PaddleOCR
+│   ├── paddle_json_images/              # JSONs de saida do PaddleOCR
+│   └── pipeline_debug/                  # Debug do pipeline integrado
 ├── src/
-│   ├── config.py                  # Constantes de path
-│   ├── inference.py               # VehicleDetector (YOLO)
-│   ├── business_rules.py          # Regras de negocio (placeholder)
-│   ├── database.py                # Operacoes SQLite (placeholder)
-│   ├── ocr_pipeline.py            # Pipeline de OCR (placeholder)
+│   ├── config.py                        # Constantes de caminho do projeto
+│   ├── inference.py                     # VehicleDetector (classe YOLO)
+│   ├── ocr_pipeline.py                  # PlateOCR (PaddleOCR + correcao)
+│   ├── pipeline.py                      # FreeFlowPipeline (orquestrador)
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── connection.py                # Gerenciamento de conexao SQLite
+│   │   ├── repository.py                # TransactionRepository (regras de negocio)
+│   │   ├── schemas.sql                  # DDL: 6 tabelas + indices
+│   │   └── seed.sql                     # DML: dados de exemplo (5 cenarios)
 │   └── scripts/
-│       ├── download_dataset.py    # Download via Roboflow
-│       └── download_model.py      # Download dos pesos via GDrive
-├── test_image/                    # Imagens para teste de inferencia
+│       ├── download_dataset.py          # Download Roboflow
+│       └── download_model.py            # Download Google Drive
+├── test_images/                         # 8 imagens para inferencia
 ├── tests/
-│   └── test_data_validator.py     # Testes (placeholder)
-└── requirements.txt
+│   ├── test_repository.py               # 12 testes unitarios (regras de negocio)
+│   └── test_paddleocr_check.py          # Verificacao de ambiente PaddleOCR
+└── requirements.txt                     # 15 dependencias limpas
 ```
 
 ---
 
 ## Stack Tecnologica
 
-| Area | Ferramentas |
-|---|---|
-| Deteccao | Ultralytics YOLOv8, PyTorch |
-| Visao Computacional | OpenCV, Supervision |
-| Dados | Roboflow, Pandas, NumPy |
-| Visualizacao | Matplotlib, Seaborn |
-| Persistencia | SQLite |
-| Ambiente | Google Colab (treino), Linux (inferencia) |
-
----
-
-## Dataset
-
-- **Fonte:** [Roboflow Universe — Alfascan / Placas Brasileiras v10](https://universe.roboflow.com/alfascan/placas_brasileiras/dataset/10)
-- **Licenca:** BY-NC-SA 4.0
-- **Classes:** `carro`, `moto`
-- **Formato:** YOLOv8 (bbox + poligonos)
-- **Distribuicao:**
-
-| Conjunto | Imagens | Labels vazias (background) |
+| Camada | Tecnologia | Proposito |
 |---|---|---|
-| Treino | 1.726 | 233 |
-| Validacao | 493 | 57 |
-| Teste | 246 | 36 |
+| **ML / Deteccao** | Ultralytics YOLOv8, PyTorch | Deteccao e classificacao de veiculos |
+| **OCR** | PaddleOCR (PP-OCRv4) | Leitura de placas veiculares |
+| **Visao Computacional** | OpenCV, NumPy | Pre-processamento e recorte de imagens |
+| **Banco de Dados** | SQLite + SQL puro | Persistencia relacional de transacoes |
+| **Dataset** | Roboflow Universe (Alfascan, v10) | 2.465 imagens rotuladas |
+| **Analise** | Pandas, Matplotlib, Seaborn, SciPy | EDA e visualizacao de metricas |
+| **Testes** | pytest, unittest | 12 cenarios de negocio validados |
+| **Documentacao** | ADRs (Architecture Decision Records) | 4 decisoes de arquitetura registradas |
 
 ---
 
@@ -98,116 +109,205 @@ python src/scripts/download_dataset.py
 python src/scripts/download_model.py
 ```
 
-O dataset e baixado do Roboflow (requer `env/.env` com a chave `roboflowApi`). O modelo `best.pt` e baixado do Google Drive.
+> O dataset e baixado do Roboflow (requer chave em `env/.env`). O modelo `best.pt` e baixado do Google Drive.
 
 ---
 
-## Uso — Inferencia
+## Uso
+
+### Pipeline Completo (1 chamada)
+
+```python
+from src.pipeline import FreeFlowPipeline
+
+pipeline = FreeFlowPipeline()
+
+# Uma imagem -> transacao registrada no banco
+transactions = pipeline.process_image(
+    "test_images/brasil_placa.jpg",
+    gate_id=1,
+    obo_tag="OBO-002"
+)
+
+for t in transactions:
+    print(f"Status: {t['status']} | Valor: R${t['toll_amount']:.2f}")
+    # Status: PENDING | Valor: R$5.50
+
+pipeline.get_audit_report()
+pipeline.close()
+```
+
+Ou execute diretamente os 3 cenarios de teste:
+
+```bash
+python src/pipeline.py
+```
+
+### Deteccao YOLO Isolada
 
 ```python
 from src.inference import VehicleDetector
 
-detector = VehicleDetector(conf_threshold=0.05)
-
-# Detectar veiculos em uma imagem
-detections = detector.detect("test_image/GettyImages-2191972762.jpg")
+detector = VehicleDetector(conf_threshold=0.20)
+detections = detector.detect("test_images/brasil_placa.jpg")
 
 for d in detections:
-    print(f"{d['class_name']} — confianca: {d['confidence']:.2f}")
-
-# Recortar veiculos detectados
-for i, d in enumerate(detections):
-    detector.crop_vehicle("test_image/GettyImages-2191972762.jpg", d['bbox'],
-                          save_path=f"outputs/cropped_vehicles/crop_{i}.jpg")
+    print(f"{d['class_name']} - {d['confidence']:.2%}")
 ```
 
-Ou diretamente:
+### OCR Isolado
+
+```python
+import cv2
+from src.ocr_pipeline import PlateOCR
+
+ocr = PlateOCR()
+image = cv2.imread("outputs/cropped_vehicles/cropped_carro_0.jpg")
+result = ocr.read_plate(image)
+
+print(result['raw_text'])         # "AOX5G10"
+print(result['corrected_text'])   # "AOX5G10" (ja valido)
+print(result['validated_plate'])  # "AOX5G10" (Mercosul)
+```
+
+### Banco de Dados Isolado
+
+```python
+from src.database.repository import TransactionRepository
+
+repo = TransactionRepository()
+
+repo.register_transaction(
+    gate_id=1, plate_read="IYJ7F53",
+    vehicle_detected="carro",
+    plate_confidence=0.98, vehicle_confidence=0.95,
+    obo_tag_number="OBO-002"
+)
+# Retorna: {'status': 'PENDING', 'toll_amount': 5.50}
+
+print(repo.get_daily_revenue())
+# {'total_transactions': 5, 'revenue_pending': 5.5, ...}
+
+print(repo.get_divergences())
+# Lista transacoes com DIVERGENCE, AUDIT, UNREGISTERED
+
+repo.close()
+```
+
+### Rodar Testes
 
 ```bash
-python src/inference.py
+python -m pytest tests/ -v
+# 12 passed
 ```
 
 ---
 
-## Resultados do Treinamento
+## Resultados
 
-### Modelo Baseline (YOLOv8s, 50 epocas)
+### YOLOv8 — Deteccao de Veiculos
 
-| Metrica | Valor |
-|---|---|
-| mAP@0.5 | 0.948 |
-| mAP@0.5:0.95 | 0.823 |
-| Precision | 0.875 |
-| Recall | 0.941 |
+| Metrica | Baseline | Optimized |
+|---|---|---|
+| **mAP@0.5** | 0.948 | 0.925 |
+| **mAP@0.5:0.95** | 0.823 | 0.795 |
+| **Precision** | 0.875 | 0.902 |
+| **Recall** | 0.941 | 0.896 |
 
-| Classe | mAP@0.5 |
+| Classe | mAP@0.5 (Baseline) |
 |---|---|
 | Carro | 0.941 |
 | Moto | 0.955 |
 
-### Modelo Otimizado (balanced_yolov8s_v1, SGD, 80 epocas)
+> O modelo baseline superou a versao otimizada. A causa raiz e o dataset com rotulos ruidosos (326 imagens de "background" que contem veiculos nao anotados). [Ver ADR-001](docs/decisions/001-spatial-bias-handling.md).
 
-| Metrica | Valor |
-|---|---|
-| mAP@0.5 | 0.925 |
-| mAP@0.5:0.95 | 0.795 |
-| Precision | 0.902 |
-| Recall | 0.896 |
+### PaddleOCR — Leitura de Placas
 
-> O modelo otimizado nao superou o baseline. A causa raiz identificada sao os **rotulos ruidosos** no dataset.
+O OCR bruto alcancou ~70% de acuracia em imagens reais. Com a camada de correcao heuristica (Minimum Edit Distance + dicionario de confusoes visuais), a acuracia subiu para **100% no dataset de teste**:
+
+| Cenario | OCR Bruto | Apos Correcao |
+|---|---|---|
+| "IYJ7F53" | "IYJ7F53" (Mercosul) | "IYJ7F53" |
+| "AOX5G10" | "AOX5G10" (Mercosul) | "AOX5G10" |
+| "NUU4E04" | "NUU4E04" (Mercosul) | "NUU4E04" |
+
+**Dicionario de confusoes visuais**: 12 pares mapeados (Z↔2, O↔0, S↔5, B↔8, G↔6, I↔1, etc.) corrigindo erros classicos de OCR em placas veiculares. [Ver ADR-002](docs/decisions/002-ocr-engine-and-correction-strategy.md).
+
+### Regras de Negocio — Cobertura de Cenarios
+
+**12/12 testes passando** — cada cenario documentado com seed data realista:
+
+| # | Cenario | Status Gerado | Tarifa |
+|---|---|---|---|
+| 1 | Passagem normal (placa + tag batem) | `PENDING` | R$ 5.50 |
+| 2 | Divergencia de placa (OCR x tag) | `DIVERGENCE` | R$ 5.50 |
+| 3 | Divergencia de categoria (caminhao com tag de carro) | `DIVERGENCE` | R$ 16.50 |
+| 4 | Veiculo sem tag OBO | `UNREGISTERED` | R$ 5.50 |
+| 5 | Tag OBO inativa | `UNREGISTERED` | R$ 5.50 |
+| 6 | Tag inexistente | `UNREGISTERED` | R$ 5.50 |
+| 7 | Categoria desconhecida pelo YOLO | `UNREGISTERED` | R$ 0.00 |
+| 8 | Consulta de divergencias (auditoria) | — | — |
+| 9 | Faturamento diario agregado | — | — |
+| 10 | Multiplas passagens mesmo veiculo | `PENDING` (3x) | R$ 16.50 |
+| 11 | Placa vazia (edge case) | `UNREGISTERED` | — |
+| 12 | Confianca zero (edge case) | `UNREGISTERED` | — |
+
+[Ver ADR-003](docs/decisions/003-relational-database-and-modular-architecture.md) e [ADR-004](docs/decisions/004-pipeline-architecture-and-business-rules.md).
 
 ---
 
-## Problemas Conhecidos
+## Decisoes de Arquitetura
 
-### 1. Rotulos Ruidosos
+O projeto segue **4 ADRs** documentando cada decisao tecnica relevante:
 
-Imagens marcadas como "background" no dataset contem veiculos visiveis nao anotados. O modelo detecta veiculos em **100% dessas imagens** (814 deteccoes em 326 supostos backgrounds), inflando artificialmente os falsos positivos nas metricas.
+| ADR | Tema | Decisao Chave |
+|---|---|---|
+| [001](docs/decisions/001-spatial-bias-handling.md) | Vies Espacial | Manter o vies em vez de "corrigi-lo" — cameras de portico sao fixas |
+| [002](docs/decisions/002-ocr-engine-and-correction-strategy.md) | Motor OCR | PaddleOCR PP-OCRv4 + correcao heuristica (Minimum Edit Distance) |
+| [003](docs/decisions/003-relational-database-and-modular-architecture.md) | Banco de Dados | SQLite com 6 tabelas normalizadas, SQL puro em arquivos `.sql` separados |
+| [004](docs/decisions/004-pipeline-architecture-and-business-rules.md) | Arquitetura | Monolito Modular em 3 camadas (Percepcao, Negocio, Orquestracao) |
 
-### 2. Vies Espacial
-
-**100% dos centroides** dos bounding boxes concentram-se na metade superior do frame (quadrante superior esquerdo). O modelo tem baixa generalizacao para veiculos em outras posicoes.
-
-### 3. Ancoragem nas Placas
-
-Os bounding boxes do dataset sao desenhados ao redor das **placas**, nao do veiculo inteiro. Se a placa estiver suja ou oclusa, o modelo pode perder o veiculo. A solucao proposta e ter dois detectores: um para veiculo (box amplo) e outro para placa (box apertado para OCR).
+Principio norteador: **Separacao de Responsabilidades** — o YOLO nao sabe que existe banco de dados, o banco nao sabe que existe OCR, e o orquestrador apenas coordena o fluxo.
 
 ---
 
-## Pipeline Completo (WIP)
+## Modelo de Dados
 
 ```
-[Captura] -> [Deteccao YOLO] -> [Classificacao carro/moto] -> [OCR da placa] -> [DB + Regras de negocio]
-                                                                                      |
-                                                                              [Transacao Free Flow]
+accounts ──┐                  toll_categories
+           │                         │
+        obo_tags ──── vehicles ──────┘
+           │
+      transactions ──── toll_gates
 ```
+
+**6 tabelas, 3a Forma Normal**, indices em `timestamp`, `plate_read`, `status` e `tag_number`. [Schemas SQL completos aqui](src/database/schemas.sql).
 
 ---
 
 ## Roadmap
 
-1. **Revisao do Dataset** — Reanotacao ou pseudo-labeling para corrigir rotulos ruidosos e vies espacial
-2. **Pipeline de OCR** — Integracao com PaddleOCR/EasyOCR + Regex para validacao de placas (padrao Mercosul e antigo)
-3. **Banco de Dados** — Implementar SQLite com tabelas `capturas`, `deteccoes`, `transacoes_freeflow`
-4. **Regras de Negocio** — Classificacao tarifaria por tipo de veiculo, eixos e categoria
-5. **Testes** — Implementar suite de testes automatizados
-6. **API REST** — FastAPI para servir o modelo em producao
-7. **Containerizacao** — Docker para deploy em ambientes Linux/cloud (AWS/GCP/Azure)
-
----
-
-## Referencias
-
-- [Ultralytics YOLOv8](https://docs.ultralytics.com/)
-- [Roboflow Universe](https://universe.roboflow.com/)
-- [Supervision](https://roboflow.github.io/supervision/)
+- [x] Deteccao YOLOv8 + classificacao carro/moto
+- [x] OCR de placas com PaddleOCR + correcao heuristica
+- [x] Banco SQLite relacional com 6 tabelas
+- [x] Regras de negocio (divergencia, auditoria, faturamento)
+- [x] Testes unitarios (12 cenarios)
+- [x] Pipeline orquestrado (`FreeFlowPipeline`)
+- [x] Documentacao de arquitetura (4 ADRs)
+- [ ] API REST com FastAPI
+- [ ] Containerizacao com Docker
+- [ ] Migracao para PostgreSQL
+- [ ] Dashboard de auditoria (Streamlit)
+- [ ] Deploy cloud (AWS/GCP)
 
 ---
 
 <div align="center">
 
-**Desenvolvido por Otavio Novais**
-Cientista de Dados | Machine Learning Engineer
-[LinkedIn](https://www.linkedin.com/in/otavio-novais/) | [GitHub](https://github.com/Otavio-Novais)
+**Desenvolvido por Otavio Novais**  
+Data Scientist | Machine Learning Engineer
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/otavio-novais/)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Otavio-Novais)
 
 </div>
