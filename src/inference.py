@@ -37,7 +37,7 @@ class VehicleDetector:
         results = self.model.predict(
             source= image_path, 
             conf=self.conf_threshold,
-            iou = 0.30, # Sobreposição mínima para ser considerada um acerto.
+            iou = 0.50, # Sobreposição mínima para ser considerada um acerto.
             save = save_results,
             project=str(OUTPUTS_DIR),
             name='predictions', # Pasta que iremos salvar os resultados

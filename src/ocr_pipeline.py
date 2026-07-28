@@ -49,7 +49,7 @@ class PlateOCR:
         maiores e nítidas
         """
         
-        target_height = 300
+        target_height = 320
         current_height = image.shape[0]
 
         if current_height < target_height:
@@ -63,12 +63,14 @@ class PlateOCR:
         
         resized = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
 
-        blur = cv2.GaussianBlur(resized, (3, 3), 0)
+        blur = cv2.GaussianBlur(resized, (0, 0), sigmaX=1.5)
+
+        _, x = cv2.threshold(blur, 105, 255, cv2.THRESH_BINARY)
         
         # Salvamos para fins de DEBUG
-        cv2.imwrite(f"outputs/ocr_images/final_image.jpg", blur)
+        cv2.imwrite(f"outputs/ocr_images/final_image.jpg", x)
 
-        return blur
+        return x
         
 
     def read_plate(self, image: np.ndarray) -> dict:
@@ -195,7 +197,7 @@ if __name__ == '__main__':
     ocr = PlateOCR()
     
     # Carregar um dos seus recortes
-    test_crop_path = '' # Ajuste o caminho de uma imagem para testar
+    test_crop_path = 'outputs/cropped_vehicles/cropped_carro_0.jpg' # Ajuste o caminho de uma imagem para testar
     test_crop = cv2.imread(test_crop_path)
     
     if test_crop is not None:

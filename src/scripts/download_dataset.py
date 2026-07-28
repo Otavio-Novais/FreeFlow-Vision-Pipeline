@@ -15,7 +15,7 @@ if not os.path.exists(DATASET_ROOT) and not os.path.exists(NEW_DATASET_PATH):
   rf = Roboflow(api_key=roboflowApiKey)
   project = rf.workspace("alfascan").project("placas_brasileiras")
   version = project.version(10)
-  dataset = version.download("yolov8")
+  dataset = version.download("yolov26")
   # Usamos a API da RoboFlow para baixar o dataset disponibilizado por eles
   # Baixamos a versão YoLoV8, apesar do arquivo .txt não estar padronizado;
 

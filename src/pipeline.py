@@ -11,7 +11,7 @@ class FreeFlowPipeline:
     Integra Visão Computacional (YOLO + PaddleOCR) com Regras de Negócio (Banco de Dados).
     """
 
-    def __init__(self, db_path: str = "data/freeflow.db", conf_threshold: float = 0.2):
+    def __init__(self, db_path: str = "data/freeflow.db", conf_threshold: float = 0.15):
         print("🚀 Inicializando o Pipeline Free Flow...")
         
         # 1. Inicializa os componentes usando as classes reais
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     pipeline = FreeFlowPipeline()
 
     # Caminho para uma imagem de teste (Ajuste para o seu ambiente)
-    test_image = "test_images/brasil_placa1.jpg" 
+    test_image = "test_images/image.jpg" 
     
     # Cenário 1: Passagem Normal (Tag correta para a placa)
     print("="*50)
