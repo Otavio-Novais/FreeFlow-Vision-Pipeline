@@ -12,7 +12,7 @@
 ## Resumo do Projeto
 
 
-Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera de portico captura o veiculo em movimento, o modelo **YOLO26** classifica o tipo (carro/moto/caminhao), o **PaddleOCR** le a placa com correcao heuristica, e um banco **SQLite** relacional cruza os dados com tags OBO para detectar divergencias e fraudes — tudo orquestrado por uma classe `FreeFlowPipeline` que processa uma imagem e retorna uma transacao pronta em uma unica chamada.
+Simulacao completa de um sistema de pedagio eletronico sem cancelas. Uma camera de portico captura o veiculo em movimento, o modelo **YOLO26** classifica o tipo (carro/moto), o **PaddleOCR** le a placa com correcao heuristica, e um banco **SQLite** relacional cruza os dados com tags OBO para detectar divergencias e fraudes — tudo orquestrado por uma classe `FreeFlowPipeline` que processa uma imagem e retorna uma transacao pronta em uma unica chamada.
 
 ```
     [Camera] ---> [YOLOv26] ---> [Crop] ---> [PaddleOCR] ---> [SQLite + Business Rules]
@@ -237,6 +237,10 @@ python -m pytest tests/ -v
 ## Resultados
 
 ### YOLOv26 — Deteccao de Veiculos
+> 🤔 **Por que YOLO26?** 
+> A migração do YOLO26 para o YOLO26 traz melhorias arquiteturais significativas, como a inferência *NMS-free* (Non-Maximum Suppression embutida na rede), 
+> que elimina gargalos de pós-processamento em Python e reduz a latência em dispositivos de borda (CPU), algo crítico para a leitura em tempo real em pórticos de pedágio.
+
 
 | Métrica | Baseline | Optimized | Variação |
 |---|---|---|---|
@@ -250,9 +254,15 @@ python -m pytest tests/ -v
 | Carro | 0.941 | 0.938 |
 | Moto | 0.955 | 0.942 |
 
-> 💡 **Por que YOLO26?** 
-> A migração do YOLO26 para o YOLO26 traz melhorias arquiteturais significativas, como a inferência *NMS-free* (Non-Maximum Suppression embutida na rede), 
-> que elimina gargalos de pós-processamento em Python e reduz a latência em dispositivos de borda (CPU), algo crítico para a leitura em tempo real em pórticos de pedágio.
+> 💡 **Insight contraintuitivo**: O modelo "otimizado" com augmentações geométricas 
+> agressivas (translate=0.3, perspective=0.001) **piorou** o mAP. 
+> 
+> **Causa raiz**: O dataset tem 326 imagens de "background" com veículos não anotados. 
+> Augmentações ensinaram o modelo a detectar carros em posições fisicamente impossíveis 
+> (cantos da imagem), gerando falsos positivos.
+> 
+> **Decisão**: Mantivemos o spatial bias natural — câmeras de pórtico são fixas, 
+> veículos sempre passam pelo centro. [Ver ADR-001](docs/decisions/001-spatial-bias-handling.md).
 
 ### PaddleOCR — Leitura de Placas
 
@@ -340,6 +350,8 @@ accounts ──┐                  toll_categories
            │
       transactions ──── toll_gates
 ```
+
+![Modelagem_do_banco_de_dados](src/database/DER_Transactions-Centered_.png)
 
 **6 tabelas, 3a Forma Normal**, indices em `timestamp`, `plate_read`, `status` e `tag_number`. [Schemas SQL completos aqui](src/database/schemas.sql).
 
