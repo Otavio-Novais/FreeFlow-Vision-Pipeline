@@ -1,3 +1,4 @@
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -203,7 +204,7 @@ class TestDatabaseConnectionGetCursor(unittest.TestCase):
     def test_cursor_closed_after_context(self):
         with self.db.get_cursor() as cursor:
             cursor.execute("SELECT 1")
-        with self.assertRaises(Exception):
+        with self.assertRaises(sqlite3.ProgrammingError):
             cursor.execute("SELECT 1")
 
 
@@ -220,7 +221,7 @@ class TestDatabaseConnectionClose(unittest.TestCase):
 
     def test_close_cleans_up(self):
         self.db.close()
-        with self.assertRaises(Exception):
+        with self.assertRaises(sqlite3.ProgrammingError):
             self.db.conn.execute("SELECT 1")
 
 

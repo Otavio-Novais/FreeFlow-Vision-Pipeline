@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from .connection import DatabaseConnection
 
@@ -135,7 +135,7 @@ class TransactionRepository:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
-                    datetime.now(),
+                    datetime.datetime.now(tz=datetime.timezone.utc),
                     gate_id,
                     plate_read,
                     plate_confidence,
