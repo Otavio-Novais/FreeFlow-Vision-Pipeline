@@ -64,7 +64,7 @@ jobs:
         run: black --check src/ tests/
       
       - name:  Verificar imports com isort
-        run: isort --check-only src/ tests/
+        run: isort --check-only src/ tests/ --profile black
       
       - name: 🔍 Verificar estilo com Flake8
         run: |
