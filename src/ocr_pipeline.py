@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -12,7 +11,7 @@ class PlateOCR:
     Inclui pré-processamento da imagem e validação via Regex.
     """
 
-    def __init__(self, languages=["en"], gpu=False):
+    def __init__(self, gpu=False):
         """
         Metódo padrão que define o que deve ser definido ao iniciar
         um objeto da classe "PlateOCR"
@@ -86,7 +85,7 @@ class PlateOCR:
         processed = cv2.GaussianBlur(blur, (3, 3), 0)
 
         # Salvamos para fins de DEBUG
-        cv2.imwrite(f"outputs/ocr_images/final_image.jpg", processed)
+        cv2.imwrite("outputs/ocr_images/final_image.jpg", processed)
 
         return processed
 

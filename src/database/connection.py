@@ -60,9 +60,9 @@ class DatabaseConnection:
         try:
             yield cursor  # Quando chamarmos o cursor, o try vai ficar pausado até que termine o uso externo
             self.conn.commit()
-        except Exception as e:
+        except Exception:
             self.conn.rollback()
-            raise e
+            raise
         finally:
             cursor.close()
 

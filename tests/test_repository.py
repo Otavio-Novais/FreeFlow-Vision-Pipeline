@@ -1,4 +1,3 @@
-import os
 import unittest
 from pathlib import Path
 
@@ -69,7 +68,7 @@ class TestTransactionRepository(unittest.TestCase):
         self.assertEqual(result["status"], "DIVERGENCE")
         self.assertIn("XYZ9999", result["divergence_reason"])
         self.assertIn("IYJ7F53", result["divergence_reason"])
-        print(f"✅ Teste 2 passou: Divergência de placa detectada")
+        print("✅ Teste 2 passou: Divergência de placa detectada")
         print(f"   Motivo: {result['divergence_reason']}")
 
     def test_03_divergencia_de_categoria(self):
@@ -88,7 +87,7 @@ class TestTransactionRepository(unittest.TestCase):
 
         self.assertEqual(result["status"], "DIVERGENCE")
         self.assertIn("caminhao_medio", result["divergence_reason"])
-        print(f"✅ Teste 3 passou: Divergência de categoria detectada (fraude)")
+        print("✅ Teste 3 passou: Divergência de categoria detectada (fraude)")
         print(f"   Motivo: {result['divergence_reason']}")
 
     def test_04_veiculo_sem_tag_unregistered(self):
@@ -108,7 +107,7 @@ class TestTransactionRepository(unittest.TestCase):
         self.assertEqual(result["status"], "UNREGISTERED")
         self.assertEqual(result["plate_read"], "GHI5678")
         self.assertAlmostEqual(result["toll_amount"], 5.50)
-        print(f"✅ Teste 4 passou: Veículo sem tag registrado para cobrança via boleto")
+        print("✅ Teste 4 passou: Veículo sem tag registrado para cobrança via boleto")
 
     def test_05_tag_inativa(self):
         """
@@ -126,7 +125,7 @@ class TestTransactionRepository(unittest.TestCase):
 
         self.assertEqual(result["status"], "UNREGISTERED")
         self.assertIn("inativa", result["divergence_reason"].lower())
-        print(f"✅ Teste 5 passou: Tag inativa detectada")
+        print("✅ Teste 5 passou: Tag inativa detectada")
         print(f"   Motivo: {result['divergence_reason']}")
 
     def test_06_veiculo_nao_cadastrado(self):
@@ -145,7 +144,7 @@ class TestTransactionRepository(unittest.TestCase):
         )
 
         self.assertEqual(result["status"], "UNREGISTERED")
-        print(f"✅ Teste 6 passou: Tag inexistente tratada como UNREGISTERED")
+        print("✅ Teste 6 passou: Tag inexistente tratada como UNREGISTERED")
 
     def test_07_categoria_desconhecida(self):
         """
@@ -163,7 +162,7 @@ class TestTransactionRepository(unittest.TestCase):
 
         self.assertEqual(result["status"], "UNREGISTERED")
         self.assertEqual(result["toll_amount"], 0.0)
-        print(f"✅ Teste 7 passou: Categoria desconhecida tratada (valor R$ 0,00)")
+        print("✅ Teste 7 passou: Categoria desconhecida tratada (valor R$ 0,00)")
 
     def test_08_get_divergences(self):
         """
@@ -204,7 +203,7 @@ class TestTransactionRepository(unittest.TestCase):
 
         self.assertGreater(revenue["total_transactions"], 0)
 
-        print(f"✅ Teste 9 passou: Faturamento do dia calculado")
+        print("✅ Teste 9 passou: Faturamento do dia calculado")
         print(f"   Total de transações: {revenue['total_transactions']}")
         print(f"   Receita Pendente: R$ {revenue['revenue_pending']:.2f}")
         print(f"   Receita Divergência: R$ {revenue['revenue_divergence']:.2f}")
@@ -236,7 +235,7 @@ class TestTransactionRepository(unittest.TestCase):
             self.assertEqual(r["status"], "PENDING")
 
         print(
-            f"✅ Teste 10 passou: 3 transações do mesmo veículo registradas com IDs únicos"
+            "✅ Teste 10 passou: 3 transações do mesmo veículo registradas com IDs únicos"
         )
 
 
@@ -265,7 +264,7 @@ class TestEdgeCases(unittest.TestCase):
         )
         # Deve registrar mesmo com placa vazia (status UNREGISTERED)
         self.assertEqual(result["status"], "UNREGISTERED")
-        print(f"✅ Teste edge case passou: Placa vazia tratada")
+        print("✅ Teste edge case passou: Placa vazia tratada")
 
     def test_confidence_zero(self):
         """Testa comportamento com confiança zero."""
@@ -278,7 +277,7 @@ class TestEdgeCases(unittest.TestCase):
             obo_tag_number=None,
         )
         self.assertEqual(result["status"], "UNREGISTERED")
-        print(f"✅ Teste edge case passou: Confiança zero tratada")
+        print("✅ Teste edge case passou: Confiança zero tratada")
 
 
 if __name__ == "__main__":

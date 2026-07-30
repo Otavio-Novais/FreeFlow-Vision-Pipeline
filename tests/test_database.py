@@ -187,13 +187,12 @@ class TestDatabaseConnectionGetCursor(unittest.TestCase):
         self.assertEqual(row["owner_name"], "Test User")
 
     def test_rollback_on_exception(self):
-        with self.assertRaises(ValueError):
-            with self.db.get_cursor() as cursor:
-                cursor.execute(
-                    "INSERT INTO accounts (owner_name, cpf_cnpj) VALUES (?, ?)",
-                    ("Rollback User", "999.888.777-66"),
-                )
-                raise ValueError("Simulated error")
+        with self.assertRaises(ValueError), self.db.get_cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO accounts (owner_name, cpf_cnpj) VALUES (?, ?)",
+                ("Rollback User", "999.888.777-66"),
+            )
+            raise ValueError("Simulated error")
         cursor = self.db.conn.cursor()
         cursor.execute(
             "SELECT COUNT(*) FROM accounts WHERE cpf_cnpj = ?", ("999.888.777-66",)

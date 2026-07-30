@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import cv2
 
@@ -40,9 +39,9 @@ class FreeFlowPipeline:
         self,
         image_path: str,
         gate_id: int = 1,
-        obo_tag: Optional[str] = None,
+        obo_tag: str | None = None,
         save_debug: bool = True,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Processa uma imagem completa simulando a passagem no pórtico.
         """
@@ -64,7 +63,7 @@ class FreeFlowPipeline:
 
         # Itera sobre cada veículo detectado
         for i, det in enumerate(detections):
-            print(f"\n--- Veículo {i+1} ---")
+            print(f"\n--- Veículo {i + 1} ---")
             print(
                 f"  Tipo (YOLO): {det['class_name']} | Confiança: {det['confidence']:.2%}"
             )
@@ -101,7 +100,7 @@ class FreeFlowPipeline:
 
                 transactions.append(transaction)
 
-                print(f"  💾 Transação registrada no DB!")
+                print("  💾 Transação registrada no DB!")
                 print(
                     f"     ID: {transaction['transaction_id']} | Status: {transaction['status']}"
                 )

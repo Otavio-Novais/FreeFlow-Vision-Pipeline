@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from pipeline import FreeFlowPipeline
 
@@ -9,7 +9,7 @@ class TestFreeFlowPipelineInit(unittest.TestCase):
     @patch("pipeline.PlateOCR")
     @patch("pipeline.VehicleDetector")
     def test_components_initialized(self, mock_detector, mock_ocr, mock_repo):
-        pipeline = FreeFlowPipeline()
+        FreeFlowPipeline()
         mock_detector.assert_called_once_with(conf_threshold=0.15)
         mock_ocr.assert_called_once()
         mock_repo.assert_called_once()
@@ -18,7 +18,7 @@ class TestFreeFlowPipelineInit(unittest.TestCase):
     @patch("pipeline.PlateOCR")
     @patch("pipeline.VehicleDetector")
     def test_custom_conf_threshold(self, mock_detector, mock_ocr, mock_repo):
-        pipeline = FreeFlowPipeline(conf_threshold=0.5)
+        FreeFlowPipeline(conf_threshold=0.5)
         mock_detector.assert_called_once_with(conf_threshold=0.5)
 
     @patch("pipeline.TransactionRepository")

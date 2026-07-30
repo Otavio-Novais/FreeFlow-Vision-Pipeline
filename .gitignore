@@ -3,7 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.egg-info/
 .Python
+dist/
+build/
 env/
 venv/
 ENV/
@@ -19,6 +22,10 @@ models/*.pt
 models/*.onnx
 outputs/
 results/
+
+# Testes e Cache
+.pytest_cache/
+.ruff_cache/
 
 # IDE
 .vscode/

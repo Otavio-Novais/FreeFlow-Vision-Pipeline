@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from .connection import DatabaseConnection
 
@@ -17,7 +16,7 @@ class TransactionRepository:
         vehicle_detected: str,
         plate_confidence: float,
         vehicle_confidence: float,
-        obo_tag_number: Optional[str] = None,
+        obo_tag_number: str | None = None,
     ) -> dict:
         """
         Registra uma transação de passagem no Free Flow.
@@ -183,10 +182,8 @@ class TransactionRepository:
 
             return [dict(row) for row in cursor.fetchall()]
 
-    def get_daily_revenue(self, date: Optional[str] = None) -> dict:
-
+    def get_daily_revenue(self, date: str | None = None) -> dict:
         with self.db.get_cursor() as cursor:
-
             if date:
                 cursor.execute(
                     """

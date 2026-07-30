@@ -60,9 +60,7 @@ class VehicleDetector:
                 classes = (
                     boxes.cls.cpu().numpy().astype(int)
                 )  # Utilizamos do .cpu(), caso o processamento rodar em um GPU, só poderemos acessar a informação caso ela estiver na memória da CPU.
-                confidences = (
-                    boxes.conf.cpu().numpy()
-                )  # Utilizamos do .numpy() porque mesmo após trazer os dados da GPU para a CPU, esse objeto está no tipo Tensor
+                confidences = boxes.conf.cpu().numpy()  # Utilizamos do .numpy() porque mesmo após trazer os dados da GPU para a CPU, esse objeto está no tipo Tensor
                 xyxy = boxes.xyxy.cpu().numpy()
 
                 for i in range(len(boxes)):
@@ -112,7 +110,7 @@ if __name__ == "__main__":
     detector = VehicleDetector(conf_threshold=0.1)
 
     # 2. Pegar a primeira imagem de teste disponível
-    test_image = str(list(Path(IMG_TEST_DIR).glob("*.jpg"))[0])
+    test_image = str(next(iter(Path(IMG_TEST_DIR).glob("*.jpg"))))
     print(f"🔍 Analisando: {test_image}")
 
     # 3. Rodar a detecção (save_results=False aqui para não duplicar com o YOLO, ou True se quiser)
@@ -126,13 +124,13 @@ if __name__ == "__main__":
 
     for i, det in enumerate(detections):
         print(
-            f"  {i+1}. {det['class_name'].upper()} - Confiança: {det['confidence']:.2%}"
+            f"  {i + 1}. {det['class_name'].upper()} - Confiança: {det['confidence']:.2%}"
         )
 
         # 5. Recortar o veículo e salvar usando o caminho correto
         cropped = detector.crop_vehicle(test_image, det["bbox"])
 
         # Salvar na pasta correta que acabamos de criar
-        save_path = cropped_dir / f'cropped_{det["class_name"]}_{i}.jpg'
+        save_path = cropped_dir / f"cropped_{det['class_name']}_{i}.jpg"
         cv2.imwrite(str(save_path), cropped)
         print(f"     ✅ Recorte salvo em: {save_path}")

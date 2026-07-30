@@ -11,7 +11,7 @@ from inference import VehicleDetector
 class TestVehicleDetectorInit(unittest.TestCase):
     def test_default_weights_path(self):
         with patch("inference.YOLO") as mock_yolo:
-            detector = VehicleDetector()
+            VehicleDetector()
             mock_yolo.assert_called_once()
             arg = mock_yolo.call_args.args[0]
             self.assertEqual(str(arg), str(MODEL_WEIGHTS_PATH))
@@ -99,7 +99,7 @@ class TestVehicleDetectorDetect(unittest.TestCase):
         )
         self.detector.model.predict.return_value = [result]
 
-        detections = self.detector.detect("/tmp/fake.jpg", save_results=True)
+        self.detector.detect("/tmp/fake.jpg", save_results=True)
         self.detector.model.predict.assert_called_once()
         call_kwargs = self.detector.model.predict.call_args.kwargs
         self.assertTrue(call_kwargs["save"])
