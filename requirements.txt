@@ -1,10 +1,32 @@
-gdown==6.1.0
-numpy==2.5.1
-opencv_contrib_python==4.10.0.84
-opencv_python==5.0.0.93
-opencv_python_headless==4.10.0.84
-paddleocr==3.7.0
-pytest==9.1.1
-python-dotenv==1.2.2
-roboflow==1.4.0
-ultralytics==8.4.107
+# ============================================================
+# FreeFlow Vision Pipeline - Dependências do Projeto
+# ============================================================
+
+# ---------- Core: Detecção YOLO ----------
+ultralytics>=8.0
+opencv-python>=4.8
+numpy>=1.24
+supervision>=0.20
+PyYAML>=6.0
+
+# ---------- Download de Dataset e Modelo ----------
+roboflow>=1.0
+gdown>=5.0
+python-dotenv>=1.0
+
+# ---------- EDA e Análise de Dados ----------
+pandas>=2.0
+matplotlib>=3.7
+seaborn>=0.12
+scipy>=1.10
+
+# ---------- OCR de Placas (futuro / planejado) ----------
+paddleocr>=2.0
+paddlepaddle>=2.5
+
+# ---------- API REST (futuro / planejado) ----------
+# fastapi>=0.100
+# uvicorn>=0.23
+
+# ---------- Testes ----------
+pytest>=7.0
