@@ -1,6 +1,6 @@
 import sqlite3
-from pathlib import Path
 from contextlib import contextmanager
+from pathlib import Path
 
 # Definimos os caminhos automaticamente para as outras pastas
 BASE_DIR = Path(__file__).resolve().parent.parent.parent

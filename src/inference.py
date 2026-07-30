@@ -1,8 +1,11 @@
-from ultralytics import YOLO
 from pathlib import Path
+
 import cv2
 import numpy as np
-from config import MODEL_WEIGHTS_PATH, IMG_TEST_DIR, OUTPUTS_DIR  # type: ignore
+from ultralytics import YOLO
+
+from config import (IMG_TEST_DIR, MODEL_WEIGHTS_PATH,  # type: ignore
+                    OUTPUTS_DIR)
 
 
 class VehicleDetector:

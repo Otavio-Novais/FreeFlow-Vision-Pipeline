@@ -1,8 +1,9 @@
+import re
+from pathlib import Path
+
 import cv2
 import numpy as np
-import re
 from paddleocr import PaddleOCR
-from pathlib import Path
 
 
 class PlateOCR:

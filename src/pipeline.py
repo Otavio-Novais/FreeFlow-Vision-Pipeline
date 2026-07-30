@@ -1,9 +1,11 @@
-import cv2
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
+
+import cv2
+
+from database.repository import TransactionRepository
 from inference import VehicleDetector
 from ocr_pipeline import PlateOCR
-from database.repository import TransactionRepository
 
 
 class FreeFlowPipeline:

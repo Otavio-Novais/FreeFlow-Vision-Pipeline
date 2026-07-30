@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional
+
 from .connection import DatabaseConnection
 
 

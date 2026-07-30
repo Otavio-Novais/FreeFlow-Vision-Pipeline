@@ -1,5 +1,6 @@
-import gdown
 import os
+
+import gdown
 
 MODEL_ROOT = "./best.pt"
 TARGET_DIR = "./models"
