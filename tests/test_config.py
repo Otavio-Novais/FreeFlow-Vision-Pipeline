@@ -1,8 +1,15 @@
 import unittest
 from pathlib import Path
 
-from config import (BASE_DIR, DATA_YAML_PATH, DATASET_DIR, IMG_TEST_DIR,
-                    MODEL_WEIGHTS_PATH, MODELS_DIR, OUTPUTS_DIR)
+from config import (
+    BASE_DIR,
+    DATA_YAML_PATH,
+    DATASET_DIR,
+    IMG_TEST_DIR,
+    MODEL_WEIGHTS_PATH,
+    MODELS_DIR,
+    OUTPUTS_DIR,
+)
 
 
 class TestConfig(unittest.TestCase):
