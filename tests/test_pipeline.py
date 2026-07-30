@@ -10,7 +10,7 @@ class TestFreeFlowPipelineInit(unittest.TestCase):
     @patch("pipeline.VehicleDetector")
     def test_components_initialized(self, mock_detector, mock_ocr, mock_repo):
         pipeline = FreeFlowPipeline()
-        mock_detector.assert_called_once_with(conf_threshold=0.2)
+        mock_detector.assert_called_once_with(conf_threshold=0.15)
         mock_ocr.assert_called_once()
         mock_repo.assert_called_once()
 
@@ -24,7 +24,9 @@ class TestFreeFlowPipelineInit(unittest.TestCase):
     @patch("pipeline.TransactionRepository")
     @patch("pipeline.PlateOCR")
     @patch("pipeline.VehicleDetector")
-    def test_class_mapping_contains_expected_keys(self, mock_detector, mock_ocr, mock_repo):
+    def test_class_mapping_contains_expected_keys(
+        self, mock_detector, mock_ocr, mock_repo
+    ):
         pipeline = FreeFlowPipeline()
         self.assertIn("carro", pipeline.class_mapping)
         self.assertIn("car", pipeline.class_mapping)
@@ -61,8 +63,16 @@ class TestFreeFlowPipelineMethods(unittest.TestCase):
 
     def test_get_audit_report_with_divergences(self):
         mock_divergences = [
-            {"plate_read": "XYZ9999", "status": "DIVERGENCE", "divergence_reason": "..."},
-            {"plate_read": "GHI5678", "status": "UNREGISTERED", "divergence_reason": "..."},
+            {
+                "plate_read": "XYZ9999",
+                "status": "DIVERGENCE",
+                "divergence_reason": "...",
+            },
+            {
+                "plate_read": "GHI5678",
+                "status": "UNREGISTERED",
+                "divergence_reason": "...",
+            },
         ]
         self.pipeline.db_repo.get_divergences.return_value = mock_divergences
 

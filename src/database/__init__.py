@@ -2,7 +2,7 @@
 Módulo de persistência de dados para o sistema Free Flow.
 
 Este pacote gerencia todas as operações de banco de dados,
-incluindo modelagem relacional, registro de transações e 
+incluindo modelagem relacional, registro de transações e
 cruzamento com tags OBO.
 """
 
@@ -11,9 +11,9 @@ from .repository import TransactionRepository
 
 # Define a API pública do pacote
 __all__ = [
-    'DatabaseConnection',
-    'TransactionRepository',
+    "DatabaseConnection",
+    "TransactionRepository",
 ]
 
 # Versão do módulo (útil para debugging)
-__version__ = '1.0.0'
+__version__ = "1.0.0"

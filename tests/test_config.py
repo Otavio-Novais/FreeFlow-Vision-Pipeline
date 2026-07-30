@@ -21,16 +21,26 @@ class TestConfig(unittest.TestCase):
 
     def test_all_paths_are_absolute(self):
         paths = [
-            BASE_DIR, DATASET_DIR, DATA_YAML_PATH,
-            MODELS_DIR, MODEL_WEIGHTS_PATH, OUTPUTS_DIR, IMG_TEST_DIR,
+            BASE_DIR,
+            DATASET_DIR,
+            DATA_YAML_PATH,
+            MODELS_DIR,
+            MODEL_WEIGHTS_PATH,
+            OUTPUTS_DIR,
+            IMG_TEST_DIR,
         ]
         for p in paths:
             self.assertTrue(p.is_absolute(), f"{p} is not absolute")
 
     def test_all_paths_are_path_objects(self):
         paths = [
-            BASE_DIR, DATASET_DIR, DATA_YAML_PATH,
-            MODELS_DIR, MODEL_WEIGHTS_PATH, OUTPUTS_DIR, IMG_TEST_DIR,
+            BASE_DIR,
+            DATASET_DIR,
+            DATA_YAML_PATH,
+            MODELS_DIR,
+            MODEL_WEIGHTS_PATH,
+            OUTPUTS_DIR,
+            IMG_TEST_DIR,
         ]
         for p in paths:
             self.assertIsInstance(p, Path, f"{p} is not a Path object")

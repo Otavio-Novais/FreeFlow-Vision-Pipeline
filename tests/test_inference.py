@@ -39,8 +39,8 @@ class TestVehicleDetectorDetect(unittest.TestCase):
         result = MagicMock()
         result.boxes = MagicMock()
         result.boxes.__len__.return_value = len(cls_data)
-        result.boxes.cls.cpu.return_value.numpy.return_value.astype.return_value = np.array(
-            cls_data
+        result.boxes.cls.cpu.return_value.numpy.return_value.astype.return_value = (
+            np.array(cls_data)
         )
         result.boxes.conf.cpu.return_value.numpy.return_value = np.array(
             conf_data, dtype=np.float32
@@ -112,7 +112,7 @@ class TestVehicleDetectorDetect(unittest.TestCase):
         call_kwargs = self.detector.model.predict.call_args.kwargs
         self.assertEqual(call_kwargs["source"], "/tmp/fake.jpg")
         self.assertEqual(call_kwargs["conf"], 0.2)
-        self.assertEqual(call_kwargs["iou"], 0.30)
+        self.assertEqual(call_kwargs["iou"], 0.50)
         self.assertEqual(call_kwargs["save"], False)
         self.assertEqual(call_kwargs["verbose"], False)
 

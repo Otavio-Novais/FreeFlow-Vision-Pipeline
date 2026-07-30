@@ -51,7 +51,11 @@ class TestPlateOCRReadPlate(unittest.TestCase):
 
     def test_empty_ocr_results(self):
         self.ocr.ocr.predict.return_value = [{"rec_texts": []}]
-        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+        with patch.object(
+            self.ocr,
+            "preprocess_image",
+            return_value=np.zeros((300, 200, 3), dtype=np.uint8),
+        ):
             result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
         self.assertEqual(result["raw_text"], "")
         self.assertEqual(result["corrected_text"], "")
@@ -59,28 +63,42 @@ class TestPlateOCRReadPlate(unittest.TestCase):
 
     def test_single_valid_text(self):
         self.ocr.ocr.predict.return_value = [{"rec_texts": ["IYJ7F53"]}]
-        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+        with patch.object(
+            self.ocr,
+            "preprocess_image",
+            return_value=np.zeros((300, 200, 3), dtype=np.uint8),
+        ):
             result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
         self.assertEqual(result["raw_text"], "IYJ7F53")
         self.assertEqual(result["validated_plate"], "IYJ7F53")
 
     def test_multiple_texts_uses_first(self):
-        self.ocr.ocr.predict.return_value = [
-            {"rec_texts": ["ABC1234", "EXTRA567"]}
-        ]
-        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+        self.ocr.ocr.predict.return_value = [{"rec_texts": ["ABC1234", "EXTRA567"]}]
+        with patch.object(
+            self.ocr,
+            "preprocess_image",
+            return_value=np.zeros((300, 200, 3), dtype=np.uint8),
+        ):
             result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
         self.assertEqual(result["raw_text"], "ABC1234")
 
     def test_non_alphanumeric_stripped(self):
         self.ocr.ocr.predict.return_value = [{"rec_texts": ["ABC-1234"]}]
-        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+        with patch.object(
+            self.ocr,
+            "preprocess_image",
+            return_value=np.zeros((300, 200, 3), dtype=np.uint8),
+        ):
             result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
         self.assertEqual(result["raw_text"], "ABC1234")
 
     def test_invalid_plate_not_registered(self):
         self.ocr.ocr.predict.return_value = [{"rec_texts": ["XXXXXXX"]}]
-        with patch.object(self.ocr, "preprocess_image", return_value=np.zeros((300, 200, 3), dtype=np.uint8)):
+        with patch.object(
+            self.ocr,
+            "preprocess_image",
+            return_value=np.zeros((300, 200, 3), dtype=np.uint8),
+        ):
             result = self.ocr.read_plate(np.zeros((100, 200, 3), dtype=np.uint8))
         self.assertIsNone(result["validated_plate"])
 
@@ -134,7 +152,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_all_matching_old_rules(self):
         result, cost = self.ocr._apply_corrections(
             "ABC1234",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertEqual(result, "ABC1234")
         self.assertEqual(cost, 0)
@@ -142,7 +168,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_all_matching_mercosul_rules(self):
         result, cost = self.ocr._apply_corrections(
             "IYJ7F53",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "alpha", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "alpha",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertEqual(result, "IYJ7F53")
         self.assertEqual(cost, 0)
@@ -150,7 +184,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_digit_in_alpha_with_valid_confusion(self):
         result, cost = self.ocr._apply_corrections(
             "0BC1234",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertEqual(result, "OBC1234")
         self.assertEqual(cost, 1)
@@ -158,7 +200,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_alpha_in_digit_with_valid_confusion(self):
         result, cost = self.ocr._apply_corrections(
             "ABC1Z34",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertEqual(result, "ABC1234")
         self.assertEqual(cost, 1)
@@ -166,7 +216,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_digit_in_alpha_no_confusion_available(self):
         result, cost = self.ocr._apply_corrections(
             "3BC1234",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertIsNone(result)
         self.assertEqual(cost, 999)
@@ -174,7 +232,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_alpha_in_digit_no_confusion_available(self):
         result, cost = self.ocr._apply_corrections(
             "ABC1J34",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertIsNone(result)
         self.assertEqual(cost, 999)
@@ -182,7 +248,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_multiple_fixable_violations(self):
         result, cost = self.ocr._apply_corrections(
             "0BC1Z34",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertEqual(result, "OBC1234")
         self.assertEqual(cost, 2)
@@ -190,7 +264,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_mixed_fixable_and_unfixable(self):
         result, cost = self.ocr._apply_corrections(
             "3BC1Z34",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "digit", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "digit",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertIsNone(result)
         self.assertEqual(cost, 999)
@@ -198,7 +280,15 @@ class TestApplyCorrections(unittest.TestCase):
     def test_mercosul_pattern_alpha_in_digit_position(self):
         result, cost = self.ocr._apply_corrections(
             "IYJ7FS3",
-            {0: "alpha", 1: "alpha", 2: "alpha", 3: "digit", 4: "alpha", 5: "digit", 6: "digit"},
+            {
+                0: "alpha",
+                1: "alpha",
+                2: "alpha",
+                3: "digit",
+                4: "alpha",
+                5: "digit",
+                6: "digit",
+            },
         )
         self.assertEqual(result, "IYJ7F53")
         self.assertEqual(cost, 1)
@@ -267,9 +357,9 @@ class TestPreprocessImage(unittest.TestCase):
         img = np.zeros((50, 80, 3), dtype=np.uint8)
         with patch("cv2.imwrite"):
             result = self.ocr.preprocess_image(img)
-        expected_width = int(80 * (300 / 50))
+        expected_width = int(80 * (320 / 50))
         self.assertEqual(result.shape[1], expected_width)
-        self.assertEqual(result.shape[0], 300)
+        self.assertEqual(result.shape[0], 320)
 
     def test_image_changed_after_sharpening(self):
         np.random.seed(42)

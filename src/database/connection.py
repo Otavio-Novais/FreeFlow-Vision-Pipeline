@@ -2,11 +2,12 @@ import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
 
-# Definimos os caminhos automaticamente para as outras pastas 
-BASE_DIR= Path(__file__).resolve().parent.parent.parent
-DB_PATH = BASE_DIR / 'data' / 'freeflow.db'
-SCHEMAS_PATH = Path(__file__).parent / 'schemas.sql'
-SEED_PATH = Path(__file__).parent / 'seed.sql'
+# Definimos os caminhos automaticamente para as outras pastas
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DB_PATH = BASE_DIR / "data" / "freeflow.db"
+SCHEMAS_PATH = Path(__file__).parent / "schemas.sql"
+SEED_PATH = Path(__file__).parent / "seed.sql"
+
 
 class DatabaseConnection:
     def __init__(self):
@@ -24,25 +25,25 @@ class DatabaseConnection:
 
     def initialize_schema(self):
         """
-        Lê e execute o arquivo 'schemas.sql' para criar 
-        as tabelas conforme definido na modelagem DER. 
+        Lê e execute o arquivo 'schemas.sql' para criar
+        as tabelas conforme definido na modelagem DER.
         """
-        with open(SCHEMAS_PATH, 'r', encoding='utf-8') as f:
-            # Estamos executando todos os CREATE TABLE ... de uma vez 
+        with open(SCHEMAS_PATH, "r", encoding="utf-8") as f:
+            # Estamos executando todos os CREATE TABLE ... de uma vez
             self.conn.executescript(f.read())
         # Com o comando abaixo estamos confirmando as alterações dentro do arquivo do banco de dados
         self.conn.commit()
 
     def seed_data(self):
         """
-        Lê e executa o arquivo seed.sql para popular 
+        Lê e executa o arquivo seed.sql para popular
         as bases de dados, apenas se o banco estiver
         vazio
         """
         cursor = self.conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM accounts")
         if cursor.fetchone()[0] == 0:
-            with open(SEED_PATH, 'r', encoding='utf-8') as f:
+            with open(SEED_PATH, "r", encoding="utf-8") as f:
                 self.conn.executescript(f.read())
             self.conn.commit()
             print("Dados de exemplos inseridos!")
@@ -50,15 +51,15 @@ class DatabaseConnection:
     @contextmanager
     def get_cursor(self):
         """
-        Context Manager para garantir que o cursor 
+        Context Manager para garantir que o cursor
         seja fechado corretamente
         """
 
         cursor = self.conn.cursor()
-        
+
         try:
-            yield cursor # Quando chamarmos o cursor, o try vai ficar pausado até que termine o uso externo
-            self.conn.commit() 
+            yield cursor  # Quando chamarmos o cursor, o try vai ficar pausado até que termine o uso externo
+            self.conn.commit()
         except Exception as e:
             self.conn.rollback()
             raise e

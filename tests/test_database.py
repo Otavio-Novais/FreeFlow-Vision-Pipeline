@@ -56,8 +56,12 @@ class TestDatabaseConnectionSchema(unittest.TestCase):
         )
         tables = [row[0] for row in cursor.fetchall()]
         expected = [
-            "accounts", "obo_tags", "toll_categories",
-            "toll_gates", "transactions", "vehicles",
+            "accounts",
+            "obo_tags",
+            "toll_categories",
+            "toll_gates",
+            "transactions",
+            "vehicles",
         ]
         for table in expected:
             self.assertIn(table, tables)
@@ -175,7 +179,9 @@ class TestDatabaseConnectionGetCursor(unittest.TestCase):
                 ("Test User", "111.222.333-44"),
             )
         cursor = self.db.conn.cursor()
-        cursor.execute("SELECT owner_name FROM accounts WHERE cpf_cnpj = ?", ("111.222.333-44",))
+        cursor.execute(
+            "SELECT owner_name FROM accounts WHERE cpf_cnpj = ?", ("111.222.333-44",)
+        )
         row = cursor.fetchone()
         self.assertIsNotNone(row)
         self.assertEqual(row["owner_name"], "Test User")
@@ -189,7 +195,9 @@ class TestDatabaseConnectionGetCursor(unittest.TestCase):
                 )
                 raise ValueError("Simulated error")
         cursor = self.db.conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM accounts WHERE cpf_cnpj = ?", ("999.888.777-66",))
+        cursor.execute(
+            "SELECT COUNT(*) FROM accounts WHERE cpf_cnpj = ?", ("999.888.777-66",)
+        )
         count = cursor.fetchone()[0]
         self.assertEqual(count, 0)
 
@@ -233,11 +241,9 @@ class TestTransactionsForeignKeyIntegrity(unittest.TestCase):
 
     def test_transaction_references_gate(self):
         with self.db.get_cursor() as cursor:
-            cursor.execute(
-                """INSERT INTO transactions
+            cursor.execute("""INSERT INTO transactions
                 (timestamp, gate_id, plate_read, vehicle_detected, status)
-                VALUES (datetime('now'), 1, 'ABC1234', 'carro', 'PENDING')"""
-            )
+                VALUES (datetime('now'), 1, 'ABC1234', 'carro', 'PENDING')""")
         cursor = self.db.conn.cursor()
         cursor.execute(
             "SELECT g.gate_code FROM transactions t "
