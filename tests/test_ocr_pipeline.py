@@ -18,7 +18,7 @@ class TestPlateOCRInit(unittest.TestCase):
             mock_paddle.assert_called_once()
             call_kwargs = mock_paddle.call_args.kwargs
             self.assertEqual(call_kwargs["lang"], "en")
-            self.assertEqual(call_kwargs["ocr_version"], "PP-OCRv4")
+            self.assertEqual(call_kwargs["ocr_version"], "PP-OCRv6")
             self.assertEqual(call_kwargs["use_doc_orientation_classify"], False)
             self.assertEqual(call_kwargs["use_doc_unwarping"], False)
             self.assertEqual(call_kwargs["use_textline_orientation"], False)
@@ -357,9 +357,9 @@ class TestPreprocessImage(unittest.TestCase):
         img = np.zeros((50, 80, 3), dtype=np.uint8)
         with patch("cv2.imwrite"):
             result = self.ocr.preprocess_image(img)
-        expected_width = int(80 * (320 / 50))
+        expected_width = int(80 * (300 / 50))
         self.assertEqual(result.shape[1], expected_width)
-        self.assertEqual(result.shape[0], 320)
+        self.assertEqual(result.shape[0], 300)
 
     def test_image_changed_after_sharpening(self):
         np.random.seed(42)

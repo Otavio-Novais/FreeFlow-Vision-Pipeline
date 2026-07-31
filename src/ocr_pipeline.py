@@ -19,7 +19,7 @@ class PlateOCR:
         print("🚀 Inicializando o Paddle OCR")
         self.ocr = PaddleOCR(
             lang="en",
-            ocr_version="PP-OCRv4",
+            ocr_version="PP-OCRv6",
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=False,
@@ -61,7 +61,7 @@ class PlateOCR:
         maiores e nítidas
         """
 
-        target_height = 320
+        target_height = 300
         current_height = image.shape[0]
 
         if current_height < target_height:
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     ocr = PlateOCR()
 
     # Carregar um dos seus recortes
-    test_crop_path = "outputs/pipeline_debug/crop_1_IYJ7F537.jpg"  # Ajuste o caminho de uma imagem para testar
+    test_crop_path = ""  # Ajuste o caminho de uma imagem para testar
     test_crop = cv2.imread(test_crop_path)
 
     if test_crop is not None:
