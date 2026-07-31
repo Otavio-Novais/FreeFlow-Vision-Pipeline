@@ -1,0 +1,5 @@
+outs:
+- md5: 5830f8a4c3326113ff727db1786b532e
+  size: 20309701
+  hash: md5
+  path: baseline_best_yolo26s.pt
